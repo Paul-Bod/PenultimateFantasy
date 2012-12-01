@@ -1,0 +1,27 @@
+#heroes .alive {
+    color: black;
+}
+
+#heroes .dead {
+    color: grey;
+}
+
+#battlefield td {
+    width: 100px;
+}
+
+.enemy-activityGauge {
+    background-color: red;
+    width: 0;
+    height: 10px;
+}
+
+.hero-activityGauge {
+    background-color: blue;
+    width: 0;
+    height: 10px
+}
+
+#heroes .dead .hero-activityGauge {
+    display: none;
+}
