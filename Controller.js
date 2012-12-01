@@ -7,10 +7,13 @@ define(['./View', './Model', './Abilities', './Items', './Money'], function (vie
         active,
         nextMove,
 
+        _characters = {},
         enemies = {},
-        _aliveEnemies = {},
+        _aliveEnemies = [],
+        _deadEnemies = [],
         heroes = {},
-        _aliveHeroes = {},
+        _aliveHeroes = [],
+        _deadHeroes = [],
 
         queue = [],
         queueTimer,
@@ -28,18 +31,18 @@ define(['./View', './Model', './Abilities', './Items', './Money'], function (vie
     moves.attack = function(actionId, defender, freebie) {
         var result = Abilities.executeAbility(active, defender, 'attack', freebie);
 
-        updateQueue();
+        updateQueueAndLists(result);
 
-        view.renderLog(result);
+        view.renderLog(result.message);
     };
 
     moves.magic = function(actionId, defender, freebie) {
         var spell = actionId[2],
             result = Abilities.executeAbility(active, defender, spell, freebie);
 
-        updateQueue();
+        updateQueueAndLists(result);
 
-        view.renderLog(result);
+        view.renderLog(result.message);
     };
 
     moves.items = function(actionId, defender, freebie) {
@@ -47,8 +50,8 @@ define(['./View', './Model', './Abilities', './Items', './Money'], function (vie
             item = actionId[2],
             result = Items.useItem(item, itemIndex, active, defender, freebie);
 
-        updateQueue();
-        view.renderLog(result);
+        updateQueueAndLists(result);
+        view.renderLog(result.message);
     };
 
     function getName(type) {
@@ -304,10 +307,10 @@ define(['./View', './Model', './Abilities', './Items', './Money'], function (vie
     // received then go to endBattle() ?
     function checkEndBattle() {
 
-        if (!_aliveEnemies) {
+        if (_aliveEnemies.length === 0) {
             return _battleWon;
         }
-        else if (!_aliveHeroes) {
+        else if (_aliveHeroes.length === 0) {
 
             if (firstLoss === false) {
                 firstLoss = 'yes';
@@ -374,98 +377,55 @@ define(['./View', './Model', './Abilities', './Items', './Money'], function (vie
         view.renderAbilities(active.abilities);
     }
 
-    function updateQueue() {
+    function indexOfCharacter (characterList, name) {
 
-        var deadHeroes = operateOnAllAliveHeroes.call(
-            this,
-            function (hero) {
+        for (var index in characterList) {
 
-                var targetIndex = queue.indexOf(hero.vitals.name);
-                if (hero.vitals.state === "dead") {
-                    queue.splice(targetIndex, 1);
-
-                    this.params.push(hero.vitals.name);
-                }
-                return true;
-            },
-            []
-        );
-
-        if (deadHeroes.length > 0) {
-            var newAliveHeroes = operateOnAllAliveHeroes.call(
-                this,
-                function (hero) {
-
-                    var targetIndex = deadHeroes.indexOf(hero.vitals.name);
-
-                    var aliveHeroesCount = 0;
-
-                    if (targetIndex > -1) {
-                        return true;
-                    }
-
-                    this.params.aliveHeroes[hero.vitals.name] = _aliveHeroes[hero.vitals.name];
-                    this.params.count++;
-
-                    return true;
-                },
-                {count : 0, aliveHeroes : {}}
-            );
-
-            if (newAliveHeroes.count == 0) {
-                newAliveHeroes = false;
+            if (characterList[index].vitals.name === name) {
+                return index;
             }
-            else {
-                newAliveHeroes = newAliveHeroes.aliveHeroes;
-            }
+        }
+    }
 
-            _aliveHeroes = newAliveHeroes;
+    function updateQueueAndLists (result) {
+
+        var charactersKilled = result.dead,
+            charactersRevived = result.alive,
+            queueTargetIndex,
+            heroTargetIndex,
+            enemyTargetIndex;
+
+        for (var character in charactersKilled) {
+
+            queueTargetIndex = queue.indexOf(charactersKilled[character]);
+            queue.splice(queueTargetIndex, 1);
+
+            heroTargetIndex = indexOfCharacter(_aliveHeroes, charactersKilled[character]);
+            enemyTargetIndex = indexOfCharacter(_aliveEnemies, charactersKilled[character]);
+
+            if (heroTargetIndex > -1) {
+                _aliveHeroes.splice(heroTargetIndex, 1);
+                _deadHeroes.push(charactersKilled[character]);
+            }
+            else if (enemyTargetIndex > -1) {
+                _aliveEnemies.splice(enemyTargetIndex, 1);
+                _deadEnemies.push(charactersKilled[character]);
+            }
         }
 
-        var deadEnemies = operateOnAllAliveEnemies.call(
-            this,
-            function (enemy) {
+        for (var character in charactersRevived) {
 
-                var targetIndex = queue.indexOf(enemy.vitals.name);
-                if (enemy.vitals.state === "dead") {
-                    queue.splice(targetIndex, 1);
+            heroTargetIndex = _deadHeroes.indexOf(charactersRevived[character]);
+            enemyTargetIndex = _deadEnemies.indexOf(charactersRevived[character]);
 
-                    this.params.push(enemy.vitals.name);
-                }
-                return true;
-            },
-            []
-        );
-
-        if (deadEnemies.length > 0) {
-            var newAliveEnemies = operateOnAllAliveEnemies.call(
-                this,
-                function (enemy) {
-
-                    var targetIndex = deadEnemies.indexOf(enemy.vitals.name);
-
-                    var aliveEnemiesCount = 0;
-
-                    if (targetIndex > -1) {
-                        return true;
-                    }
-
-                    this.params.aliveEnemies[enemy.vitals.name] = _aliveEnemies[enemy.vitals.name];
-                    this.params.count++;
-
-                    return true;
-                },
-                {count : 0, aliveEnemies : {}}
-            );
-
-            if (newAliveEnemies.count == 0) {
-                newAliveEnemies = false;
+            if (heroTargetIndex > -1) {
+                _deadHeroes.splice(heroTargetIndex, 1);
+                _aliveHeroes.push(charactersRevived[character]);
             }
-            else {
-                newAliveEnemies = newAliveEnemies.aliveEnemies;
+            else if (enemyTargetIndex > -1) {
+                _deadEnemies.splice(enemyTargetIndex, 1);
+                _aliveEnemies.push(charactersRevived[character]);
             }
-
-            _aliveEnemies = newAliveEnemies;
         }
     }
 
@@ -571,7 +531,8 @@ define(['./View', './Model', './Abilities', './Items', './Money'], function (vie
             enemies[name] = new model[monster](name);
             enemies[name].createBattleAbilities();
 
-            _aliveEnemies[name] = enemies[name];
+            _aliveEnemies.push(enemies[name]);
+            _characters[name] = enemies[name];
         }
     };
 
@@ -607,7 +568,7 @@ define(['./View', './Model', './Abilities', './Items', './Money'], function (vie
 
     function createHeroBattleAbilities () {
         
-        _aliveHeroes = {};
+        _aliveHeroes = [];
 
         operateOnAllHeroes.call(
             this,
@@ -617,7 +578,8 @@ define(['./View', './Model', './Abilities', './Items', './Money'], function (vie
 
                 if (hero.vitals.state !== 'dead') {
 
-                    _aliveHeroes[hero.vitals.name] = heroes[hero.vitals.name];
+                    _aliveHeroes.push(heroes[hero.vitals.name]);
+                    _characters[hero.vitals.name] = heroes[hero.vitals.name];
                 }
 
                 return true;
@@ -627,7 +589,7 @@ define(['./View', './Model', './Abilities', './Items', './Money'], function (vie
 
     exports.startBattle = function(difficulty) {
 
-        _aliveEnemies = {};
+        _aliveEnemies = [];
 
         model.setActivityGaugeReadyHandler(activityGaugeUpdator);
 

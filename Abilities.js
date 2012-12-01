@@ -73,40 +73,68 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
         }
     }
 
-    function executeOneOffensive (active, defenders, ability) {
+    function executeOneOffensive (active, defender, ability) {
+
+        var moveResult = {
+            message : '',
+            alive : [],
+            dead : []
+        };
 
         assignMoveExperienceToHero(active, ability.baseExp, ability.details.characterClass);
-        return executeOffensive(active, defenders, ability);
+        moveResult.message = executeOffensive(active, defender, ability);
+        moveResult[defender.vitals.state].push(defender.vitals.name);
+
+        return moveResult;
     }
 
     function executeManyOffensive (active, defenders, ability) {
 
-        var message = '';
+        var moveResult = {
+            message : '',
+            alive : [],
+            dead : []
+        };
 
         for (var defender in defenders) {
-            message += executeOffensive(active, defenders[defender], ability) + Translations.translate('format_break');
+            moveResult.message += executeOffensive(active, defenders[defender], ability) + Translations.translate('format_break');
+            moveResult[defenders[defender].vitals.state].push(defenders[defender].vitals.name);
         }
 
         assignMoveExperienceToHero(active, ability.baseExp, ability.details.characterClass);
-        return message;
+        return moveResult;
     }
 
     function executeOneHealing (active, defender, ability) {
 
+        var moveResult = {
+            message : '',
+            alive : [],
+            dead : []
+        };
+
         assignMoveExperienceToHero(active, ability.baseExp, ability.details.characterClass);
-        return executeOffensive(active, defenders, ability);
+        moveResult.message = executeHealing(active, defender, ability);
+        moveResult[defender.vitals.state].push(defender.vitals.name);
+
+        return moveResult;
     }
 
     function executeManyHealing (active, defenders, ability) {
 
-        var message = '';
+        var moveResult = {
+            message : '',
+            alive : [],
+            dead : []
+        };
 
         for (var defender in defenders) {
-            message += executeOffensive(active, defenders[defender], ability) + Translations.translate('format_break');
+            moveResult.message += executeHealing(active, defenders[defender], ability) + Translations.translate('format_break');
+            moveResult[defenders[defender].vitals.state].push(defenders[defender].vitals.name);
         }
 
         assignMoveExperienceToHero(active, ability.baseExp, ability.details.characterClass);
-        return message;
+        return moveResult;
     }
 
     var exports = {};
