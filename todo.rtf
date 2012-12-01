@@ -1,0 +1,95 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1038\cocoasubrtf360
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww21720\viewh16320\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+
+\f0\fs24 \cf0 NEW FEATURES\
+\strike \strikec0 \
+- money -\
+- shop -\
+- add ether -\strike0\striked0 \
+status ailments\
+additional classes\
+momentum\
+\
+REFACTORS\
+\
+\strike \strikec0 - monster baseExp, deathExp and money to go on this.reward. Will also include items one day.\
+reward object created in controller.endBattle. Contains money and experience per character. Passed to view.renderBattleSummary instead of heroes. -\
+- enemy move refactor -\
+	- createBattleAbilities at start of battle -\
+- Use requireJS! -\
+- remove object.creates in character -\
+- move all view translations into model -\
+- each ability / item to provide own message using Translations! -\
+- moves targeting all heroes/enemies -\
+- unbind click events after each select target etc. -\
+- in Controller.js maintain a list of aliveEnemies and aliveHeroes. Check size of these lists when checking for end battle and use lists when setting targets for moves hitting all -\
+- -- In updateQueue forloop over _aliveHeroes and _aliveEnemies to find name of dead enemy and remove from array -\strike0\striked0 \
+moves return an object with message and a list of characters they have killed and revived. To be used in update queue.\
+Controller to maintain list of dead heroes as well as alive. In update queue move newly dead characters to dead list and newly alive characters to alive list, based on move results.\
+moves targeting all heroes/enemies but focused on an individual\
+moves targeting a configurable number of targets\
+achievements to model\
+Menu messages to store with menu\
+First loss message\
+\strike \strikec0 - rename magic vile to vial -\strike0\striked0 \
+\
+review experience relating to level\
+upgrade hp/mp\
+restart activity gauge on back?\
+accuracy\
+evasion\
+on death earn undefined dollars\
+on death 0 experience!\
+\
+STATUS AILMENTS / EFFECTS\
+\
+1 - applying a function several times over a number of goes i.e. poison\
+2 - applying a function once on casting for effect, and a second function some goes later to remove effect i.e. protect\
+3 - functions applied once to remove active effects i.e. despell\
+4 - a function who's effect lasts either the whole battle or until removed by 3\
+5 - effects that stack and those that override? IE silence and poison stack but haste and slow override\
+\
+\
+WARRIOR\
+\
+Gains by doing attack.\
+Spends on class-specific skills\
+Each skill costs x momentum\
+\
+BLACK MAGE\
+\
+Gains by doing black magic\
+class-specific skills are listed with regular magic\
+On select target, magic is charged up by holding down mouse button which depletes momentum.\
+Momentum spent on charging boosts power of spell\
+\
+WHITE MAGE\
+\
+Gains by doing white magic\
+Class-specific skills are listed with regular magic\
+When momentum bar is half full, each spell can select two targets\
+When momentum bar is full, each spell can select three targets\
+\
+THIEF\
+\
+Gains by stealing\
+Class-specific skills involve turning monsters into useful things like gold\
+Monster HP and thief momentum when using skill determines how good the item is\
+\
+ALCHEMIST\
+\
+Gains by using item\
+Class-specific skills are creating base items and using alchemist only special items\
+Each item requires an amount of momentum to create\
+Each special item requires an amount of momentum and several base items to use\
+\
+BEAST\
+\
+Gains by taking damage\
+Class-specific skills are lots of passive stat boosters\
+select a number of these to be active\
+Boost effect is greater with more momentum\
+momentum is depleted by attacking}
