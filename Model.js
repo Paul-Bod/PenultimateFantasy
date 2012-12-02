@@ -333,6 +333,16 @@ define(['./Abilities', './Items', './Utils'], function (Abilities, Items, Utils)
         this.vitals.hp = this.vitals.maxHp = 350;
     };
 
+    var beast = function (name) {
+        $.extend(this, new Hero(name));
+
+        this.vitals.type = 'b';
+        this.attributes.strength = 13;
+        this.vitals.hp = this.vitals.maxHp = 400;
+
+        Abilities.teachAbility(this, 'cannonball');
+    };
+
     var blackmage = function(name) {
         $.extend(this, new Mage(name));
 
@@ -356,6 +366,8 @@ define(['./Abilities', './Items', './Utils'], function (Abilities, Items, Utils)
         this.vitals.mp = this.vitals.maxMp = 75;
 
         Abilities.teachAbility(this, 'cure');
+        Abilities.teachAbility(this, 'healingwind');
+        Abilities.teachAbility(this, 'healerupt');
     };
 
     var alchemist = function(name) {
@@ -370,10 +382,11 @@ define(['./Abilities', './Items', './Utils'], function (Abilities, Items, Utils)
     };
 
     exports.heroes = {
-        warrior   : warrior,
-        blackmage : blackmage,
-        whitemage : whitemage,
-        alchemist : alchemist
+        'warrior'   : warrior,
+        'beast'     : beast,
+        'blackmage' : blackmage,
+        'whitemage' : whitemage,
+        'alchemist' : alchemist
     };
 
     exports.easyDemon = function(name) {

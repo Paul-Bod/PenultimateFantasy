@@ -45,6 +45,15 @@ define(['./View', './Model', './Abilities', './Items', './Money'], function (vie
         view.renderLog(result.message);
     };
 
+    moves.skills = function(actionId, defender, freebie) {
+        var skill = actionId[2],
+            result = Abilities.executeAbility(active, defender, skill, freebie);
+
+        updateQueueAndLists(result);
+
+        view.renderLog(result.message);
+    };
+
     moves.items = function(actionId, defender, freebie) {
         var itemIndex = actionId[1],
             item = actionId[2],
@@ -567,7 +576,7 @@ define(['./View', './Model', './Abilities', './Items', './Money'], function (vie
 
         switch (difficulty) {
             case 'easy':
-                minMonsters = 6;
+                minMonsters = 2;
                 maxMonsters = 6;
                 createRandomEnemies(minMonsters, maxMonsters, difficulty);
                 break;

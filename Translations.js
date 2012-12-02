@@ -24,6 +24,7 @@ define(function () {
         heroes_type_wm    : 'White Mage',
         heroes_type_bm    : 'Black Mage',
         heroes_type_al    : 'Alchemist',
+        heroes_type_b     : 'Beast',
 
         heroes_experience          : '{0} has {1} experience.',
         heroes_experiencetolevelup : '{0} must spend {1} experience points in order to level up.',
@@ -79,11 +80,17 @@ define(function () {
         items_lifeorb_message    : '{0} used a Life Orb on {1} !',
         items_magicvial_message  : '{0} used a Magic Vial on {1} restoring {2} magic !',
 
-        abilities_attack_message : '{0} attacked {1} doing {2} physical damage !',
+        abilities_attack_message        : '{0} attacked {1} doing {2} physical damage !',
         abilities_attack_absorb_message : '{0} attacked {1}. {1} absorbed {2} physical damage !',
         abilities_attack_immune_message : '{0} attacked {1}. {1} is immune to physical damage !',
         abilities_attack_strong_message : '{0} attacked {1} doing {2} physical damage ! physical damage has little effect on {1} !',
         abilities_attack_weak_message   : '{0} attacked {1} doing {2} physical damage ! {1} is weak against physical damage !',
+
+        abilities_cannonball_message        : '{0} used Cannonball on {1} doing {2} physical damage !',
+        abilities_cannonball_absorb_message : '{0} used Cannonball on {1}. {1} absorbed {2} physical damage !',
+        abilities_cannonball_immune_message : '{0} used Cannonball on {1}. {1} is immune to physical damage !',
+        abilities_cannonball_strong_message : '{0} used Cannonball on {1} doing {2} physical damage ! physical damage has little effect on {1} !',
+        abilities_cannonball_weak_message   : '{0} used Cannonball on {1} doing {2} physical damage ! {1} is weak against physical damage !',
 
         abilities_fire_message        : '{0} cast Fire on {1} doing {2} fire damage !',
         abilities_fire_absorb_message : '{0} cast Fire on {1}. {1} absorbed {2} fire damage !',
@@ -117,6 +124,12 @@ define(function () {
 
         abilities_cure_message            : '{0} cast Cure on {1} restoring {2} health !',
         abilities_cure_weak_message       : '{0} cast Cure on {1} doing {2} damage ! {1} is weak against healing magic !',
+
+        abilities_healingwind_message      : '{0} cast Healing Wind on {1} restoring {2} health !',
+        abilities_healingwind_weak_message : '{0} cast Healing Wind on {1} doing {2} damage ! {1} is weak against healing magic !',
+
+        abilities_healerupt_message      : '{0} cast Heal Erupt on {1} restoring {2} health !',
+        abilities_healerup_weak_message : '{0} cast Heal Erupt on {1} doing {2} damage ! {1} is weak against healing magic !',
     };
 
     exports.translate = function (key, inserts) {

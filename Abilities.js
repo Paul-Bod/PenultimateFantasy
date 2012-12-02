@@ -18,7 +18,7 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
             attack = active.attributes.magic;
             defense = defender.attributes.magicdefense;
         }
-        else if (ability.details.type === 'physical') {
+        else {
             attack = active.attributes.strength;
             defense = defender.attributes.defense;
         }
@@ -38,20 +38,16 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
 
         logMess = Translations.translate('abilities_' + ability.name + Translations.getResistanceKey(resistance) + '_message', [active.vitals.name, defender.vitals.name, damage]);
 
-        if (active.vitals.baseType === 'hero') {
-            active.receive.collectedExp(MoveSupport.getOnDeathExperience(defender.vitals.state, MoveSupport.getDeathExperienceFromRewards(defender.rewards)));
-        }
-
         return logMess;
     }
 
-    function executeHealing (active, target, spell) {
+    function executeHealing (active, target, spell, modifiers) {
 
         var resistance = MoveSupport.getResistanceToMove(spell.details.element, target.resistances),
             hpIncrease,
             logMess;
 
-        hpIncrease = MoveSupport.getHealing(active.attributes.magic, active.training.level, spell.baseMultiplier);
+        hpIncrease = MoveSupport.getHealing(active.attributes.magic, active.training.level, spell.getBaseMultiplier(modifiers));
         if (resistance === 'weak') {
             target.receive.damage(hpIncrease);
         }
@@ -60,8 +56,6 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
         }
 
         logMess = Translations.translate('abilities_' + spell.name + Translations.getResistanceKey(resistance) + '_message', [active.vitals.name, target.vitals.name, hpIncrease]);
-
-        MoveSupport.checkTotalMoveExperience(spell.baseExp, spell.details.characterClass, active);
 
         return logMess;
     }
@@ -106,6 +100,37 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
             splashIndex = (index - defenders.focusIndex) * offsetMultiplier;
 
             moveResult.message += executeOffensive(
+                active,
+                targetDefenders[index],
+                executionAbility,
+                {'splashIndex' : splashIndex}
+            ) + Translations.translate('format_break');
+
+            moveResult[targetDefenders[index].vitals.state].push(targetDefenders[index].vitals.name);
+        }
+
+        assignMoveExperienceToHero(active, executionAbility.baseExp, executionAbility.details.characterClass);
+        return moveResult;
+    }
+
+    function executeSplashHealing (active, defenders, ability) {
+
+        var moveResult = {
+                message : '',
+                alive : [],
+                dead : []
+            },
+            targetDefenders = defenders.target,
+            executionAbility = ability,
+            splashIndex,
+            offsetMultiplier;
+
+        for (var index in targetDefenders) {
+
+            offsetMultiplier = index < defenders.focusIndex ? -1 : 1;
+            splashIndex = (index - defenders.focusIndex) * offsetMultiplier;
+
+            moveResult.message += executeHealing(
                 active,
                 targetDefenders[index],
                 executionAbility,
@@ -197,6 +222,60 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
                 function (active, target) {
 
                     return executeOneHealing(active, target, this);
+                }
+        },
+
+        healingwind : {
+            name             : 'healingwind',
+            selectionType    : exports.selectionTypes['all'],
+            mpCost           : 30,
+            experienceCost   : 200,
+            baseExp          : 3,
+            details          : { characterClass : 'wm',
+                                 type           : 'magic',
+                                 element        : 'heal' },
+            getBaseMultiplier :
+                function () {
+                    return 1.1;
+                },
+            execute          : 
+                function (active, target) {
+                    return executeManyHealing(active, target, this);
+                }
+        },
+
+        healerupt : {
+            name           : 'healerupt',
+            selectionType  : exports.selectionTypes['splash'],
+            mpCost         : 30,
+            experienceCost : 200,
+            baseExp        : 3,
+            details        : { characterClass : 'wm',
+                               type           : 'magic',
+                               element        : 'heal'},
+            getBaseMultiplier :
+                function (modifiers) {
+
+                    var baseMultiplier = 1.1;
+                    return baseMultiplier * (1 + (modifiers.splashIndex * -0.1));
+                },
+            execute        :
+                function (active, defenders) {
+
+                    var splashDefenders = {};
+
+                    for (var index in defenders.target) {
+
+                        if (defenders.target[index].vitals.name === defenders.focus) {
+                            splashDefenders.focusIndex = index;
+                            break;
+                        }
+                    }
+
+                    splashDefenders.target = defenders.target;
+                    splashDefenders.focus = defenders.focus;
+
+                    return executeSplashHealing(active, splashDefenders, this);
                 }
         },
 
@@ -335,6 +414,41 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
 
                     return executeOneOffensive(active, defender, this);
                 }
+        },
+
+        cannonball : {
+            name           : 'cannonball',
+            selectionType  : exports.selectionTypes['splash'],
+            mpCost         : '',
+            experienceCost : 200,
+            baseExp        : 3,
+            details        : { characterClass : 'b',
+                               type           : 'skill',
+                               element        : 'physical'},
+            getBaseMultiplier :
+                function (modifiers) {
+
+                    var baseMultiplier = 0.9;
+                    return baseMultiplier * (1 + (modifiers.splashIndex * -0.1));
+                },
+            execute        :
+                function (active, defenders) {
+
+                    var splashDefenders = {};
+
+                    for (var index in defenders.target) {
+
+                        if (defenders.target[index].vitals.name === defenders.focus) {
+                            splashDefenders.focusIndex = index;
+                            break;
+                        }
+                    }
+
+                    splashDefenders.target = defenders.target;
+                    splashDefenders.focus = defenders.focus;
+
+                    return executeSplashOffensive(active, splashDefenders, this);
+                }
         }
     };
 
@@ -364,6 +478,21 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
 
                 student.abilities.magic.push(newAbility);
                 student.abilities.magic.sort(function(a, b) {
+                    if (a.name < b.name) {
+                        return -1;
+                    }
+                    else {
+                        return 1;
+                    }
+                });
+                break;
+             case 'skill':
+                if (!student.abilities.skills) {
+                    student.abilities.skills = [];
+                }
+
+                student.abilities.skills.push(newAbility);
+                student.abilities.skills.sort(function(a, b) {
                     if (a.name < b.name) {
                         return -1;
                     }
