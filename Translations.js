@@ -103,11 +103,17 @@ define(function () {
         abilities_thunder_strong_message  : '{0} cast Thunder on {1} doing {2} electric damage ! Electric damage has little effect on {1} !',
         abilities_thunder_weak_message    : '{0} cast Thunder on {1} doing {2} electric damage ! {1} is weak against electric damage !',
 
-        abilities_storm_message : '{0} cast Storm on {1} doing {2} electric damage !',
+        abilities_storm_message         : '{0} cast Storm on {1} doing {2} electric damage !',
         abilities_storm_absorb_message  : '{0} cast Storm on {1}. {1} absorbed {2} electric damage !',
         abilities_storm_immune_message  : '{0} cast Storm on {1}. {1} is immune to electric damage !',
         abilities_storm_strong_message  : '{0} cast Storm on {1} doing {2} electric damage ! Electric damage has little effect on {1} !',
         abilities_storm_weak_message    : '{0} cast Storm on {1} doing {2} electric damage ! {1} is weak against electric damage !',
+
+        abilities_implosion_message         : '{0} cast Implosion on {1} doing {2} fire damage !',
+        abilities_implosion_absorb_message  : '{0} cast Implosion on {1}. {1} absorbed {2} fire damage !',
+        abilities_implosion_immune_message  : '{0} cast Implosion on {1}. {1} is immune to fire damage !',
+        abilities_implosion_strong_message  : '{0} cast Implosion on {1} doing {2} fire damage ! fire damage has little effect on {1} !',
+        abilities_implosion_weak_message    : '{0} cast Implosion on {1} doing {2} fire damage ! {1} is weak against fire damage !',
 
         abilities_cure_message            : '{0} cast Cure on {1} restoring {2} health !',
         abilities_cure_weak_message       : '{0} cast Cure on {1} doing {2} damage ! {1} is weak against healing magic !',

@@ -1,6 +1,6 @@
 define(['./MoveSupport', './Translations'], function (MoveSupport, Translations) {
 
-    function executeOffensive (active, defender, ability) {
+    function executeOffensive (active, defender, ability, modifiers) {
 
         var resistance = MoveSupport.getResistanceToMove(ability.details.element, defender.resistances);
 
@@ -28,7 +28,7 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
             active.training.level,
             defense,
             defender.training.level,
-            ability.baseMultiplier,
+            ability.getBaseMultiplier(modifiers),
             ability.details.element,
             resistance
         );
@@ -88,6 +88,37 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
         return moveResult;
     }
 
+    function executeSplashOffensive (active, defenders, ability) {
+
+        var moveResult = {
+                message : '',
+                alive : [],
+                dead : []
+            },
+            targetDefenders = defenders.target,
+            executionAbility = ability,
+            splashIndex,
+            offsetMultiplier;
+
+        for (var index in targetDefenders) {
+
+            offsetMultiplier = index < defenders.focusIndex ? -1 : 1;
+            splashIndex = (index - defenders.focusIndex) * offsetMultiplier;
+
+            moveResult.message += executeOffensive(
+                active,
+                targetDefenders[index],
+                executionAbility,
+                {'splashIndex' : splashIndex}
+            ) + Translations.translate('format_break');
+
+            moveResult[targetDefenders[index].vitals.state].push(targetDefenders[index].vitals.name);
+        }
+
+        assignMoveExperienceToHero(active, executionAbility.baseExp, executionAbility.details.characterClass);
+        return moveResult;
+    }
+
     function executeManyOffensive (active, defenders, ability) {
 
         var moveResult = {
@@ -138,24 +169,30 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
     }
 
     var exports = {};
-        exports.selectionTypes = {
-            one              : 'one',
-            all              : 'all',
-            allWithSelection : 'allWithSelection'
-        };
+
+    exports.selectionTypes = {
+        one              : 'one',
+        all              : 'all',
+        allWithSelection : 'allWithSelection',
+        splash           : 'splash'
+    };
 
     var abilities = {
         // white magic
         cure : {
             name           : 'cure',
             selectionType  : exports.selectionTypes['one'],
-            baseMultiplier : 1.2,
             mpCost         : 15,
             experienceCost : 100,
             baseExp        : 3,
             details        : { characterClass : 'wm',
                                type           : 'magic',
                                element        : 'heal' },
+            getBaseMultiplier :
+                function () {
+
+                    return 1.2;
+                },
             execute        :
                 function (active, target) {
 
@@ -167,13 +204,16 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
         fire : {
             name           : 'fire',
             selectionType  : exports.selectionTypes['one'],
-            baseMultiplier : 1.2,
             mpCost         : 15,
             experienceCost : 100,
             baseExp        : 3,
             details        : { characterClass : 'bm',
                                type           : 'magic',
                                element        : 'fire' },
+            getBaseMultiplier :
+                function () {
+                    return 1.2;
+                },
             execute        :
                 function (active, defender) {
 
@@ -181,16 +221,54 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
                 }
         },
 
+        implosion : {
+            name           : 'implosion',
+            selectionType  : exports.selectionTypes['splash'],
+            mpCost         : 30,
+            experienceCost : 200,
+            baseExp        : 3,
+            details        : { characterClass : 'bm',
+                               type           : 'magic',
+                               element        : 'fire'},
+            getBaseMultiplier :
+                function (modifiers) {
+
+                    var baseMultiplier = 1.1;
+                    return baseMultiplier * (1 + (modifiers.splashIndex * -0.1));
+                },
+            execute        :
+                function (active, defenders) {
+
+                    var splashDefenders = {};
+
+                    for (var index in defenders.target) {
+
+                        if (defenders.target[index].vitals.name === defenders.focus) {
+                            splashDefenders.focusIndex = index;
+                            break;
+                        }
+                    }
+
+                    splashDefenders.target = defenders.target;
+                    splashDefenders.focus = defenders.focus;
+
+                    return executeSplashOffensive(active, splashDefenders, this);
+                }
+        },
+
         thunder : {
             name           : 'thunder',
             selectionType  : exports.selectionTypes['one'],
-            baseMultiplier : 1.2,
             mpCost         : 15,
             experienceCost : 100,
             baseExp        : 3,
             details        : { characterClass : 'bm',
                                type           : 'magic',
                                element        : 'electric' },
+            getBaseMultiplier :
+                function () {
+                    return 1.2;
+                },
             execute        :
                 function (active, defender) {
 
@@ -201,13 +279,16 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
         storm : {
             name           : 'storm',
             selectionType  : exports.selectionTypes['all'],
-            baseMultiplier : 1.1,
             mpCost         : 30,
             experienceCost : 500,
             baseExp        : 3,
             details        : { characterClass : 'bm',
                                type           : 'magic',
                                element        : 'electric' },
+            getBaseMultiplier :
+                function () {
+                    return 1.1;
+                },
             execute        :
                 function (active, defenders) {
 
@@ -218,13 +299,16 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
         blizzard : {
             name           : 'blizzard',
             selectionType  : exports.selectionTypes['one'],
-            baseMultiplier : 1.2,
             mpCost         : 15,
             experienceCost : 100,
             baseExp        : 3,
             details        : { characterClass : 'bm',
                                type           : 'magic',
                                element        : 'ice' },
+            getBaseMultiplier :
+                function () {
+                    return 1.2;
+                },
             execute        :
                 function(active, defender) {
 
@@ -236,13 +320,16 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
         attack : {
             name           : 'attack',
             selectionType  : exports.selectionTypes['one'],
-            baseMultiplier : 1.2,
             mpCost         : '',
             experienceCost : 100,
             baseExp        : 3,
             details        : { characterClass : 'w',
                                type           : 'physical',
                                element        : 'physical' },
+            getBaseMultiplier :
+                function () {
+                    return 1.2;
+                },
             execute        :
                 function(active, defender) {
 

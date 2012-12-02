@@ -411,8 +411,41 @@ define(['./Translations'], function (Translations) {
 
                 var child = $(this);
                 child.click(function (e) {
-                    controller.heroBattleEvent(action, e.srcElement.id)
-                    child.unbind('click');
+                    controller.heroBattleEvent(action, e.srcElement.id);
+                    enemies.unbind('click');
+                    heroes.unbind('click');
+                });
+            }
+
+            enemies.children().each(applyClickHandler);
+            heroes.children().each(applyClickHandler);
+
+            controller.pause();
+        };
+
+        exports.renderSelectTargetWithSplash = function (action, superAction) {
+
+            var enemies = $("#enemies"),
+                heroes = $("#heroes"),
+                logMess = Translations.translate('battle_selecttarget');
+
+            renderCancelButton.call(this);
+
+            // optional argument
+            if (!superAction) {
+                var superAction = false;
+            }
+            
+            exports.renderLog(logMess);
+
+            var applyClickHandler = function () {
+
+                var child = $(this);
+                child.click(function (e) {
+                    var selectionId = e.srcElement.parentElement.id + '-' + e.srcElement.id;
+                    controller.heroBattleEvent(action, selectionId);
+                    enemies.unbind('click');
+                    heroes.unbind('click');
                 });
             }
 

@@ -462,13 +462,35 @@ define(['./View', './Model', './Abilities', './Items', './Money'], function (vie
 
         startActivityGauges.call(this);
 
+        var focusPos = target.indexOf('-');
+
+        if (focusPos > -1) {
+            console.log(focusPos);
+            console.log(target.length);
+            console.log(target);
+            var focusTarget = target.substr(focusPos+1, target.length);
+            target = target.substr(0, focusPos+1);
+        }
+
         switch (target) {
 
             case 'enemies':
                 defender = _aliveEnemies;
                 break;
+            case 'enemies-':
+                defender = {
+                    'focus' : focusTarget,
+                    'target' : _aliveEnemies
+                };
+                break;
             case 'heroes':
                 defender = _aliveHeroes;
+                break;
+            case 'heroes-':
+                defender = {
+                    'focus' : focusTarget,
+                    'target' : _aliveHeroes
+                };
                 break;
             default:
                 if (enemies[target]) {
@@ -545,7 +567,7 @@ define(['./View', './Model', './Abilities', './Items', './Money'], function (vie
 
         switch (difficulty) {
             case 'easy':
-                minMonsters = 2;
+                minMonsters = 6;
                 maxMonsters = 6;
                 createRandomEnemies(minMonsters, maxMonsters, difficulty);
                 break;
@@ -860,6 +882,9 @@ define(['./View', './Model', './Abilities', './Items', './Money'], function (vie
 
                 case Abilities.selectionTypes.all:
                     itemAttributes.clickAction = function(e){view.renderSelectEnemiesOrHeroes(e.srcElement.id, superAction)};
+                    break;
+                case Abilities.selectionTypes.splash:
+                    itemAttributes.clickAction = function(e){view.renderSelectTargetWithSplash(e.srcElement.id, superAction)};
                     break;
                 case Abilities.selectionTypes.one:
                 default:

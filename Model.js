@@ -345,6 +345,7 @@ define(['./Abilities', './Items', './Utils'], function (Abilities, Items, Utils)
         Abilities.teachAbility(this, 'blizzard');
 
         Abilities.teachAbility(this, 'storm');
+        Abilities.teachAbility(this, 'implosion');
     };
 
     var whitemage = function(name) {
