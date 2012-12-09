@@ -706,19 +706,13 @@ define([
         stopQueueHandler();
     };
 
-    function play() {
-        startQueueHandler.call(this);
-        startActivityGauges.call(this);
-    }
-
     function activityGaugeHandler(gaugeData) {
 
         if (gaugeData.readyState) {
             queue.push(gaugeData.character);
         }
-        else {
-            view.renderActivityGauge(gaugeData.character, gaugeData.lastWidth);
-        }
+
+        view.renderActivityGauge(gaugeData.character, gaugeData.lastWidth);
     }
 
     exports.getHeroes = function() {
