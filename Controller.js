@@ -588,6 +588,7 @@ define(['./View', './Model', './Abilities', './Items', './Money'], function (vie
             case 'yelloweyeddemon':
                 enemies['YellowEyedDemon'] = new model['yellowEyedDemon']();
                 enemies['YellowEyedDemon'].createBattleAbilities();
+                _aliveEnemies.push(enemies['YellowEyedDemon']);
                 break;
             default:
                 minMonseters = maxMonsters = 1;
