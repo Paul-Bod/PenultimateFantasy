@@ -1,197 +1,4 @@
-define(['./MoveSupport', './Translations'], function (MoveSupport, Translations) {
-
-    function executeOffensive (active, defender, ability, modifiers) {
-
-        var resistance = MoveSupport.getResistanceToMove(ability.details.element, defender.resistances);
-
-        if (resistance === 'immune') {
-            return logMess = Translations.translate('abilities_' + ability.name + Translations.getResistanceKey(resistance) + '_message', [active.vitals.name, defender.vitals.name]);
-        }
-        
-        var action,
-            damage,
-            attack,
-            defense,
-            logMess;
-
-        if (ability.details.type === 'magic') {
-            attack = active.attributes.magic;
-            defense = defender.attributes.magicdefense;
-        }
-        else {
-            attack = active.attributes.strength;
-            defense = defender.attributes.defense;
-        }
-
-        damage = MoveSupport.getDamageWithDefenseAndAttack(
-            attack,
-            active.training.level,
-            defense,
-            defender.training.level,
-            ability.getBaseMultiplier(modifiers),
-            ability.details.element,
-            resistance
-        );
-
-        action = MoveSupport.getActionFromResistance(resistance);
-        defender.receive[action](damage);
-
-        logMess = Translations.translate('abilities_' + ability.name + Translations.getResistanceKey(resistance) + '_message', [active.vitals.name, defender.vitals.name, damage]);
-
-        return logMess;
-    }
-
-    function executeHealing (active, target, spell, modifiers) {
-
-        var resistance = MoveSupport.getResistanceToMove(spell.details.element, target.resistances),
-            hpIncrease,
-            logMess;
-
-        hpIncrease = MoveSupport.getHealing(active.attributes.magic, active.training.level, spell.getBaseMultiplier(modifiers));
-        if (resistance === 'weak') {
-            target.receive.damage(hpIncrease);
-        }
-        else {
-            target.receive.hp(hpIncrease);
-        }
-
-        logMess = Translations.translate('abilities_' + spell.name + Translations.getResistanceKey(resistance) + '_message', [active.vitals.name, target.vitals.name, hpIncrease]);
-
-        return logMess;
-    }
-
-    function assignMoveExperienceToHero (active, baseExp, abilityCharacterClass) {
-
-        if (active.vitals.baseType === 'hero') {
-            active.receive.collectedExp(MoveSupport.getMoveExperience(baseExp, abilityCharacterClass, active));
-        }
-    }
-
-    function executeOneOffensive (active, defender, ability) {
-
-        var moveResult = {
-            message : '',
-            alive : [],
-            dead : []
-        };
-
-        assignMoveExperienceToHero(active, ability.baseExp, ability.details.characterClass);
-        moveResult.message = executeOffensive(active, defender, ability);
-        moveResult[defender.vitals.state].push(defender.vitals.name);
-
-        return moveResult;
-    }
-
-    function executeSplashOffensive (active, defenders, ability) {
-
-        var moveResult = {
-                message : '',
-                alive : [],
-                dead : []
-            },
-            targetDefenders = defenders.target,
-            executionAbility = ability,
-            splashIndex,
-            offsetMultiplier;
-
-        for (var index in targetDefenders) {
-
-            offsetMultiplier = index < defenders.focusIndex ? -1 : 1;
-            splashIndex = (index - defenders.focusIndex) * offsetMultiplier;
-
-            moveResult.message += executeOffensive(
-                active,
-                targetDefenders[index],
-                executionAbility,
-                {'splashIndex' : splashIndex}
-            ) + Translations.translate('format_break');
-
-            moveResult[targetDefenders[index].vitals.state].push(targetDefenders[index].vitals.name);
-        }
-
-        assignMoveExperienceToHero(active, executionAbility.baseExp, executionAbility.details.characterClass);
-        return moveResult;
-    }
-
-    function executeSplashHealing (active, defenders, ability) {
-
-        var moveResult = {
-                message : '',
-                alive : [],
-                dead : []
-            },
-            targetDefenders = defenders.target,
-            executionAbility = ability,
-            splashIndex,
-            offsetMultiplier;
-
-        for (var index in targetDefenders) {
-
-            offsetMultiplier = index < defenders.focusIndex ? -1 : 1;
-            splashIndex = (index - defenders.focusIndex) * offsetMultiplier;
-
-            moveResult.message += executeHealing(
-                active,
-                targetDefenders[index],
-                executionAbility,
-                {'splashIndex' : splashIndex}
-            ) + Translations.translate('format_break');
-
-            moveResult[targetDefenders[index].vitals.state].push(targetDefenders[index].vitals.name);
-        }
-
-        assignMoveExperienceToHero(active, executionAbility.baseExp, executionAbility.details.characterClass);
-        return moveResult;
-    }
-
-    function executeManyOffensive (active, defenders, ability) {
-
-        var moveResult = {
-            message : '',
-            alive : [],
-            dead : []
-        };
-
-        for (var defender in defenders) {
-            moveResult.message += executeOffensive(active, defenders[defender], ability) + Translations.translate('format_break');
-            moveResult[defenders[defender].vitals.state].push(defenders[defender].vitals.name);
-        }
-
-        assignMoveExperienceToHero(active, ability.baseExp, ability.details.characterClass);
-        return moveResult;
-    }
-
-    function executeOneHealing (active, defender, ability) {
-
-        var moveResult = {
-            message : '',
-            alive : [],
-            dead : []
-        };
-
-        assignMoveExperienceToHero(active, ability.baseExp, ability.details.characterClass);
-        moveResult.message = executeHealing(active, defender, ability);
-        moveResult[defender.vitals.state].push(defender.vitals.name);
-
-        return moveResult;
-    }
-
-    function executeManyHealing (active, defenders, ability) {
-
-        var moveResult = {
-            message : '',
-            alive : [],
-            dead : []
-        };
-
-        for (var defender in defenders) {
-            moveResult.message += executeHealing(active, defenders[defender], ability) + Translations.translate('format_break');
-            moveResult[defenders[defender].vitals.state].push(defenders[defender].vitals.name);
-        }
-
-        assignMoveExperienceToHero(active, ability.baseExp, ability.details.characterClass);
-        return moveResult;
-    }
+define(['./MoveSupport'], function (MoveSupport) {
 
     var exports = {};
 
@@ -221,7 +28,7 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
             execute        :
                 function (active, target) {
 
-                    return executeOneHealing(active, target, this);
+                    return MoveSupport.executeOneHealing(active, target, this);
                 }
         },
 
@@ -240,7 +47,7 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
                 },
             execute          : 
                 function (active, target) {
-                    return executeManyHealing(active, target, this);
+                    return MoveSupport.executeManyHealing(active, target, this);
                 }
         },
 
@@ -275,7 +82,7 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
                     splashDefenders.target = defenders.target;
                     splashDefenders.focus = defenders.focus;
 
-                    return executeSplashHealing(active, splashDefenders, this);
+                    return MoveSupport.executeSplashHealing(active, splashDefenders, this);
                 }
         },
 
@@ -296,7 +103,7 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
             execute        :
                 function (active, defender) {
 
-                    return executeOneOffensive(active, defender, this);
+                    return MoveSupport.executeOneOffensive(active, defender, this);
                 }
         },
 
@@ -331,7 +138,7 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
                     splashDefenders.target = defenders.target;
                     splashDefenders.focus = defenders.focus;
 
-                    return executeSplashOffensive(active, splashDefenders, this);
+                    return MoveSupport.executeSplashOffensive(active, splashDefenders, this);
                 }
         },
 
@@ -351,7 +158,7 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
             execute        :
                 function (active, defender) {
 
-                    return executeOneOffensive(active, defender, this);
+                    return MoveSupport.executeOneOffensive(active, defender, this);
                 }
         },
 
@@ -371,7 +178,7 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
             execute        :
                 function (active, defenders) {
 
-                    return executeManyOffensive(active, defenders, this);
+                    return MoveSupport.executeManyOffensive(active, defenders, this);
                 }
         },
 
@@ -391,7 +198,7 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
             execute        :
                 function(active, defender) {
 
-                    return executeOneOffensive(active, defender, this);
+                    return MoveSupport.executeOneOffensive(active, defender, this);
                 }
         },
 
@@ -412,7 +219,7 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
             execute        :
                 function(active, defender) {
 
-                    return executeOneOffensive(active, defender, this);
+                    return MoveSupport.executeOneOffensive(active, defender, this);
                 }
         },
 
@@ -447,7 +254,7 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
                     splashDefenders.target = defenders.target;
                     splashDefenders.focus = defenders.focus;
 
-                    return executeSplashOffensive(active, splashDefenders, this);
+                    return MoveSupport.executeSplashOffensive(active, splashDefenders, this);
                 }
         }
     };
