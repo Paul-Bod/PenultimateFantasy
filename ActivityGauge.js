@@ -1,60 +1,70 @@
-function ActivityGauge(character, updateHandler) {
-    var activityConstant = 20,
-        animSpeed = 50,
-        activityTimeout = '',
-        currVal = 0,
-        lastWidth = 0,
-        intervals = 0;
+define(['./EventEmitter'], function (Pubsub) {
 
-    function readyCheck() {
-        var ready = false;
-        if (lastWidth == 1.0) {
-            ready = true;
-            this.stop();
-        }
-        updateHandler(ready, character.vitals.name, lastWidth);
-    }
+    function ActivityGauge(character) {
+        var activityConstant = 20,
+            animSpeed = 50,
+            activityTimeout = '',
+            currVal = 0,
+            lastWidth = 0,
+            intervals = 0;
 
-    function updateOnInterval() {
-        currVal++;
-        lastWidth = currVal/intervals;
-        if (lastWidth > 1.0) {
-            lastWidth = 1.0;
-        }
-        readyCheck.call(this);
-    }
+        function readyCheck() {
+            var ready = false;
+            if (lastWidth == 1.0) {
+                ready = true;
+                this.stop();
+            }
 
-    function calculateTimeUntilGo() {
-        var timeUntilGo = (activityConstant / character.attributes.speed) * 1000;
-        if (timeUntilGo < 1000) {
-            timeUntilGo = 1000;
+            Pubsub.emitEvent('activitygauge:update', [{
+                readyState : ready,
+                character : character.vitals.name,
+                lastWidth : lastWidth
+            }]);
         }
 
-        return timeUntilGo;
+        function updateOnInterval() {
+            currVal++;
+            lastWidth = currVal/intervals;
+            if (lastWidth > 1.0) {
+                lastWidth = 1.0;
+            }
+            readyCheck.call(this);
+        }
+
+        function calculateTimeUntilGo() {
+            var timeUntilGo = (activityConstant / character.attributes.speed) * 1000;
+            if (timeUntilGo < 1000) {
+                timeUntilGo = 1000;
+            }
+
+            return timeUntilGo;
+        }
+
+        this.start = function() {
+            var _this = this;
+            intervals = calculateTimeUntilGo() / animSpeed;
+            activityTimeout = setInterval(function() {updateOnInterval.call(_this)}, animSpeed);
+        };
+
+        this.stop = function() {
+            clearInterval(activityTimeout);
+        };
+
+        this.clear = function() {
+            currVal = 0;
+            lastWidth = 0;
+            intervals = 0;
+        };
+
+        this.restart = function() {
+            this.clear();
+            this.start();
+        };
+
+        this.getLastWidth = function() {
+            return lastWidth;
+        };
     }
 
-    this.start = function() {
-        var _this = this;
-        intervals = calculateTimeUntilGo() / animSpeed;
-        activityTimeout = setInterval(function() {updateOnInterval.call(_this)}, animSpeed);
-    };
-
-    this.stop = function() {
-        clearInterval(activityTimeout);
-    };
-
-    this.clear = function() {
-        currVal = 0;
-        lastWidth = 0;
-        intervals = 0;
-    };
-
-    this.restart = function() {
-        this.clear();
-        this.start();
-    };
-
-    this.getLastWidth = function() {
-        return lastWidth;
-    };
-}
+    return ActivityGauge;
+});

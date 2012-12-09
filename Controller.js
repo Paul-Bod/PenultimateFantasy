@@ -1,4 +1,11 @@
-define(['./View', './Model', './Abilities', './Items', './Money'], function (view, model, Abilities, Items, Money) {
+define([
+    './View',
+    './Model',
+    './Abilities',
+    './Items',
+    './Money',
+    './EventEmitter'
+], function (view, model, Abilities, Items, Money, Pubsub) {
 
     var exports = {},
 
@@ -623,7 +630,10 @@ define(['./View', './Model', './Abilities', './Items', './Money'], function (vie
 
         _aliveEnemies = [];
 
-        model.setActivityGaugeReadyHandler(activityGaugeUpdator);
+        Pubsub.addListener('activitygauge:update', function (gaugeData) {
+
+            activityGaugeHandler(gaugeData);
+        });
 
         initialiseEnemies(difficulty);
 
@@ -701,12 +711,13 @@ define(['./View', './Model', './Abilities', './Items', './Money'], function (vie
         startActivityGauges.call(this);
     }
 
-    function activityGaugeUpdator(ready, name, value) {
-        if (ready) {
-            queue.push(name);
+    function activityGaugeHandler(gaugeData) {
+
+        if (gaugeData.readyState) {
+            queue.push(gaugeData.character);
         }
         else {
-            view.renderActivityGauge(name, value);
+            view.renderActivityGauge(gaugeData.character, gaugeData.lastWidth);
         }
     }
 

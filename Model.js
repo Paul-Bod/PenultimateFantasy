@@ -1,8 +1,6 @@
-define(['./Abilities', './Items', './Utils'], function (Abilities, Items, Utils) {
+define(['./Abilities', './Items', './Utils', 'ActivityGauge'], function (Abilities, Items, Utils, ActivityGauge) {
 
     var exports = {},
-
-    activityGaugeReadyHandler = function() {},
 
     easyMonsterTypes = ['Demon', 'IceDemon', 'FireDemon', 'ElectricDemon'],
 
@@ -59,7 +57,7 @@ define(['./Abilities', './Items', './Utils'], function (Abilities, Items, Utils)
 
         this.rewards = {};
 
-        this.activityGauge = new ActivityGauge(this, activityGaugeStateProxy);
+        this.activityGauge = new ActivityGauge(this);
         
 
         this.receive = {};
@@ -497,14 +495,6 @@ define(['./Abilities', './Items', './Utils'], function (Abilities, Items, Utils)
         Abilities.teachAbility(this, 'thunder');
         Abilities.teachAbility(this, 'fire');
         Abilities.teachAbility(this, 'blizzard');
-    };
-
-    function activityGaugeStateProxy(ready, name, value) {
-        activityGaugeReadyHandler(ready, name, value);
-    }
-
-    exports.setActivityGaugeReadyHandler = function(handler) {
-        activityGaugeReadyHandler = handler;
     };
 
     exports.getAttributePurchaseCost = function(level) {
