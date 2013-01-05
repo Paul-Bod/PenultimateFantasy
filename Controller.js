@@ -23,9 +23,6 @@ define([
         _aliveHeroes = [],
         _deadHeroes = [],
 
-        queue = [],
-        queueTimer,
-        queueHandleFunc = queueHandler,
         thisInstance,
         battleDelay = 2000,
         achievements = [],
@@ -39,7 +36,7 @@ define([
     moves.attack = function(actionId, defender, freebie) {
         var result = Abilities.executeAbility(active, defender, 'attack', freebie);
 
-        updateQueueAndLists(result);
+        updateLists(result);
 
         view.renderLog(result.message);
     };
@@ -48,7 +45,7 @@ define([
         var spell = actionId[2],
             result = Abilities.executeAbility(active, defender, spell, freebie);
 
-        updateQueueAndLists(result);
+        updateLists(result);
 
         view.renderLog(result.message);
     };
@@ -57,7 +54,7 @@ define([
         var skill = actionId[2],
             result = Abilities.executeAbility(active, defender, skill, freebie);
 
-        updateQueueAndLists(result);
+        updateLists(result);
 
         view.renderLog(result.message);
     };
@@ -67,7 +64,7 @@ define([
             item = actionId[2],
             result = Items.useItem(item, itemIndex, active, defender, freebie);
 
-        updateQueueAndLists(result);
+        updateLists(result);
         view.renderLog(result.message);
     };
 
@@ -124,19 +121,19 @@ define([
 
     function moveEnd() {
 
-        Pubsub.emitEvent('controller:move:end');
-
         _endBattleState = checkEndBattle();
 
         if (_endBattleState === _battleContinue) {
+
             if (active.vitals.state !== 'dead') {
                 active.activityGauge.restart(this);
             }
-            startQueueHandler.call(this);
         }
         else {
             endBattle();
         }
+
+        Pubsub.emitEvent('controller:move:end');
     }
 
     function finaliseExp() {
@@ -224,9 +221,6 @@ define([
             }
         );
 
-        queue = [];
-        stopQueueHandler();
-        
         if (_endBattleState === _battleWon) {
             rewards = endBattleRewards();
             endBattleExperience(rewards.experiencePerHero);
@@ -408,21 +402,16 @@ define([
         }
     }
 
-    function updateQueueAndLists (result) {
+    function updateLists (result) {
 
         var charactersKilled = result.dead,
             charactersRevived = result.alive,
-            queueTargetIndex,
             heroTargetIndex,
             enemyTargetIndex;
 
         for (var character in charactersKilled) {
 
-            queueTargetIndex = queue.indexOf(charactersKilled[character]);
-
             Pubsub.emitEvent('controller:character:killed', [charactersKilled[character]]);
-
-            queue.splice(queueTargetIndex, 1);
 
             heroTargetIndex = indexOfCharacter(_aliveHeroes, charactersKilled[character]);
             enemyTargetIndex = indexOfCharacter(_aliveEnemies, charactersKilled[character]);
@@ -453,20 +442,19 @@ define([
         }
     }
 
-    function queueHandler() {
-        var nextCharacter = queue.splice(0, 1);
+    function queueHandler(nextCharacter) {
 
         if (heroes[nextCharacter]) {
-            stopQueueHandler();
             active = heroes[nextCharacter];
             heroMove();
         }
         else if (enemies[nextCharacter]) {
-            stopQueueHandler();
             active = enemies[nextCharacter];
             enemyMove.call(this);
         }
     }
+
+    Pubsub.addListener('queue:ready', queueHandler);
 
     exports.getBattleOptions = function() {
         var options = [];
@@ -652,18 +640,7 @@ define([
         view.renderHeroes(heroes);
 
         startActivityGauges.call(this);
-
-        startQueueHandler.call(this);
     };
-
-    function startQueueHandler() {
-        thisInstance = this;
-        queueTimer = setInterval(function(){queueHandleFunc.call(thisInstance)}, 250);
-    }
-
-    function stopQueueHandler() {
-        clearInterval(queueTimer);
-    }
 
     function stopActivityGauges() {
         operateOnAllHeroes.call(
@@ -711,14 +688,9 @@ define([
 
     exports.pause = function() {
         stopActivityGauges();
-        stopQueueHandler();
     };
 
     function activityGaugeHandler(gaugeData) {
-
-        if (gaugeData.readyState) {
-            queue.push(gaugeData.character);
-        }
 
         view.renderActivityGauge(gaugeData.character, gaugeData.lastWidth);
     }

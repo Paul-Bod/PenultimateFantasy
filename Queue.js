@@ -3,11 +3,13 @@ define(['./EventEmitter'], function (Pubsub) {
     var queue = [],
         processing = false;
 
-    function processQueue () {
+    function processNextItem () {
 
         processing = true;
 
         var nextCharacter = queue.splice(0, 1);
+
+        Pubsub.emitEvent('queue:ready', [nextCharacter]);
 
         console.log('handling: ', nextCharacter);
     }
@@ -23,7 +25,7 @@ define(['./EventEmitter'], function (Pubsub) {
 
             if (!processing) {
                 console.log('starting process!');
-                processQueue();
+                processNextItem();
             }
         }
     }
@@ -34,7 +36,7 @@ define(['./EventEmitter'], function (Pubsub) {
 
         if (queue.length > 0) {
 
-            processQueue();
+            processNextItem();
         }
         else {
             processing = false;
