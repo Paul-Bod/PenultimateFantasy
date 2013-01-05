@@ -4,8 +4,9 @@ define([
     './Abilities',
     './Items',
     './Money',
-    './EventEmitter'
-], function (view, model, Abilities, Items, Money, Pubsub) {
+    './EventEmitter',
+    './Queue'
+], function (view, model, Abilities, Items, Money, Pubsub, Queue) {
 
     var exports = {},
 
@@ -123,6 +124,8 @@ define([
 
     function moveEnd() {
 
+        Pubsub.emitEvent('controller:move:end');
+
         _endBattleState = checkEndBattle();
 
         if (_endBattleState === _battleContinue) {
@@ -200,6 +203,8 @@ define([
 
         var rewards = {},
             resultMessage = 'You Have Died!';
+
+        Pubsub.emitEvent('controller:battle:end');
 
         operateOnAllHeroes.call(
             this,
@@ -414,6 +419,9 @@ define([
         for (var character in charactersKilled) {
 
             queueTargetIndex = queue.indexOf(charactersKilled[character]);
+
+            Pubsub.emitEvent('controller:character:killed', [charactersKilled[character]]);
+
             queue.splice(queueTargetIndex, 1);
 
             heroTargetIndex = indexOfCharacter(_aliveHeroes, charactersKilled[character]);
@@ -584,7 +592,7 @@ define([
         switch (difficulty) {
             case 'easy':
                 minMonsters = 2;
-                maxMonsters = 6;
+                maxMonsters = 2;
                 createRandomEnemies(minMonsters, maxMonsters, difficulty);
                 break;
             case 'medium':
