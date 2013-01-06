@@ -1,8 +1,9 @@
-define(['./MoveSupport'], function (MoveSupport) {
+define(['./MoveSupport', './EventEmitter'], function (MoveSupport, Pubsub) {
 
     var exports = {};
 
     exports.selectionTypes = {
+        none             : 'none',
         one              : 'one',
         all              : 'all',
         allWithSelection : 'allWithSelection',
@@ -231,7 +232,7 @@ define(['./MoveSupport'], function (MoveSupport) {
             baseExp        : 3,
             details        : { characterClass : 'b',
                                type           : 'skill',
-                               element        : 'physical'},
+                               element        : 'physical' },
             getBaseMultiplier :
                 function (modifiers) {
 
@@ -255,6 +256,23 @@ define(['./MoveSupport'], function (MoveSupport) {
                     splashDefenders.focus = defenders.focus;
 
                     return MoveSupport.executeSplashOffensive(active, splashDefenders, this);
+                }
+        },
+
+        //neutral
+        skip : {
+            name           : 'skip',
+            selectionType  : exports.selectionTypes['none'],
+            mpCost         : '',
+            experienceCost : 0,
+            baseExp        : 0,
+            details        : { characterClass : 'a',
+                               type           : 'neutral',
+                               element        : 'none' },
+            execute        :
+                function () {
+
+                    Pubsub.emitEvent('abilities:skip');
                 }
         }
     };
@@ -309,16 +327,17 @@ define(['./MoveSupport'], function (MoveSupport) {
                 });
                 break;
             case 'physical':
+            case 'neutral':
                 student.abilities[ability] = newAbility;
                 break;
         }
     };
 
-    exports.getMpCost = function(ability) {
+    exports.getMpCost = function (ability) {
         return abilities[ability].mpCost;
     };
 
-    exports.executeAbility = function(active, target, ability, freebie) {
+    exports.executeAbility = function (active, target, ability, freebie) {
 
         if (abilities[ability].mpCost && !freebie) {
             active.receive.mpCost(abilities[ability].mpCost);
@@ -327,8 +346,13 @@ define(['./MoveSupport'], function (MoveSupport) {
         return abilities[ability].execute(active, target, ability);
     };
 
-    exports.getAbilities = function() {
-        return abilities;
+    exports.executeNeutralAbility = function (ability) {
+
+        return abilities[ability].execute();
+    };
+
+    exports.getAbilities = function () {
+        abilities[ability].execute();
     };
 
     return exports;

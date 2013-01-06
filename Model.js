@@ -165,6 +165,7 @@ define(['./Abilities', './Items', './Utils', 'ActivityGauge'], function (Abiliti
         this.training.experienceSpendToNextLevel = this.training.baseExperienceSpendToNextLevel;
 
         this.abilities.items = Items.getPartyItems();
+        Abilities.teachAbility(this, 'skip');
 
         // define additional receive properties for heroes
         this.receive.mp = function(points) {

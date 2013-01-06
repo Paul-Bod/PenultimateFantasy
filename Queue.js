@@ -11,20 +11,20 @@ define(['./EventEmitter'], function (Pubsub) {
 
         Pubsub.emitEvent('queue:ready', [nextCharacter]);
 
-        console.log('handling: ', nextCharacter);
+        //console.log('handling: ', nextCharacter);
     }
 
     function handleGaugeUpdate (gaugeData) {
 
         if (gaugeData.readyState) {
 
-            console.log('activitygauge:update ', gaugeData.character);
+            //console.log('activitygauge:update ', gaugeData.character);
             queue.push(gaugeData.character);
 
-            console.log('queue: ', queue);
+            //console.log('queue: ', queue);
 
             if (!processing) {
-                console.log('starting process!');
+                //console.log('starting process!');
                 processNextItem();
             }
         }
@@ -32,7 +32,7 @@ define(['./EventEmitter'], function (Pubsub) {
 
     function handleMoveEnd () {
 
-        console.log('finished handling ^^');
+        //console.log('finished handling ^^');
 
         if (queue.length > 0) {
 
@@ -40,13 +40,13 @@ define(['./EventEmitter'], function (Pubsub) {
         }
         else {
             processing = false;
-            console.log('queue empty, ending process');
+            //console.log('queue empty, ending process');
         }
     }
 
     function removeKilledCharacter (character) {
 
-        console.log('removing killed character: ', character);
+        //console.log('removing killed character: ', character);
         var queueTargetIndex = queue.indexOf(character);
 
         if (queueTargetIndex >= 0) {
@@ -57,7 +57,7 @@ define(['./EventEmitter'], function (Pubsub) {
 
     function resetQueue () {
 
-        console.log('battle over, resetting queue, ending process');
+        //console.log('battle over, resetting queue, ending process');
         queue = [];
         processing = false;
     }
@@ -66,4 +66,5 @@ define(['./EventEmitter'], function (Pubsub) {
     Pubsub.addListener('controller:move:end', handleMoveEnd);
     Pubsub.addListener('controller:character:killed', removeKilledCharacter);
     Pubsub.addListener('controller:battle:end', resetQueue);
+    Pubsub.addListener('abilities:skip', function () {console.log('skipping!');});
 });

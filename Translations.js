@@ -67,6 +67,7 @@ define(function () {
         battle_selecttarget          : 'Select target !',
         battle_selectenemiesorheroes : 'Select Enemies or Heroes !',
         battle_go                    : '{0}\'s go !',
+        battle_options_next          : 'Next Hero',
 
         battlesummary_money            : 'You\'re party has earned {0} Dollars !',
         battlesummary_experiencegained : '{0} earned {1} experience points !',

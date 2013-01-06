@@ -23,6 +23,14 @@ define([
         _aliveHeroes = [],
         _deadHeroes = [],
 
+        targetTypes = {
+            enemies          : 'enemies',
+            enemiesWithFocus : 'enemies-',
+            heroes           : 'heroes',
+            heroesWithFocus  : 'heroes-',
+            none             : 'none'
+        },
+
         thisInstance,
         battleDelay = 2000,
         achievements = [],
@@ -66,6 +74,12 @@ define([
 
         updateLists(result);
         view.renderLog(result.message);
+    };
+
+    moves.skip = function (actionId, defender, freebie) {
+
+        var ability = actionId[2]
+        Abilities.executeNeutralAbility(ability);
     };
 
     function getName(type) {
@@ -486,24 +500,32 @@ define([
 
         switch (target) {
 
-            case 'enemies':
+            case targetTypes.none:
+                defender = null;
+                break;
+
+            case targetTypes.enemies:
                 defender = _aliveEnemies;
                 break;
-            case 'enemies-':
+
+            case targetTypes.enemiesWithFocus:
                 defender = {
                     'focus' : focusTarget,
                     'target' : _aliveEnemies
                 };
                 break;
-            case 'heroes':
+
+            case targetTypes.heroes:
                 defender = _aliveHeroes;
                 break;
-            case 'heroes-':
+
+            case targetTypes.heroesWithFocus:
                 defender = {
                     'focus' : focusTarget,
                     'target' : _aliveHeroes
                 };
                 break;
+
             default:
                 if (enemies[target]) {
                     defender = enemies[target];
@@ -849,6 +871,9 @@ define([
     exports.getRenderAbilityAttributes = function(ability, abilities, superAction) {
         var itemAttributes = {};
 
+        console.log('ability attributes vv');
+        console.log(ability);
+
         if ($.isArray(abilities[ability])) {
             var idNumber = 'single';
             var idName = ability;
@@ -875,15 +900,21 @@ define([
 
             switch (abilities[ability].selectionType) {
 
+                case Abilities.selectionTypes.none:
+                    itemAttributes.clickAction = function (e) {exports.heroBattleEvent(e.srcElement.id, targetTypes.none)};
+                    break;
+
                 case Abilities.selectionTypes.all:
-                    itemAttributes.clickAction = function(e){view.renderSelectEnemiesOrHeroes(e.srcElement.id, superAction)};
+                    itemAttributes.clickAction = function (e) {view.renderSelectEnemiesOrHeroes(e.srcElement.id, superAction)};
                     break;
+
                 case Abilities.selectionTypes.splash:
-                    itemAttributes.clickAction = function(e){view.renderSelectTargetWithSplash(e.srcElement.id, superAction)};
+                    itemAttributes.clickAction = function (e) {view.renderSelectTargetWithSplash(e.srcElement.id, superAction)};
                     break;
+
                 case Abilities.selectionTypes.one:
                 default:
-                    itemAttributes.clickAction = function(e){view.renderSelectTarget(e.srcElement.id, superAction)};
+                    itemAttributes.clickAction = function (e) {view.renderSelectTarget(e.srcElement.id, superAction)};
                     break;
             }
         }

@@ -615,6 +615,8 @@ define(['./Translations'], function (Translations) {
     };
 
     exports.renderAbilities = function(abilities, superAction, back) {
+
+        console.log(abilities);
         // optional arguments
         if (typeof superAction === 'undefined') {
             superAction = false;
@@ -630,7 +632,12 @@ define(['./Translations'], function (Translations) {
             var _this = this;
 
             $('#abilities').empty();
+
+            console.log('abilities vv');
             for (var ability in abilities) {
+
+                console.log(abilities[ability]);
+
                 var item = $('<button>');
                 item.attr('type', 'button');
 
