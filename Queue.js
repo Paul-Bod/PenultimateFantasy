@@ -9,22 +9,17 @@ define(['./EventEmitter'], function (Pubsub) {
 
         var nextCharacter = queue.splice(0, 1);
 
-        Pubsub.emitEvent('queue:ready', [nextCharacter]);
+        Pubsub.emitEvent('queue:ready', nextCharacter);
 
-        //console.log('handling: ', nextCharacter);
     }
 
     function handleGaugeUpdate (gaugeData) {
 
         if (gaugeData.readyState) {
 
-            //console.log('activitygauge:update ', gaugeData.character);
             queue.push(gaugeData.character);
 
-            //console.log('queue: ', queue);
-
             if (!processing) {
-                //console.log('starting process!');
                 processNextItem();
             }
         }
@@ -32,32 +27,41 @@ define(['./EventEmitter'], function (Pubsub) {
 
     function handleMoveEnd () {
 
-        //console.log('finished handling ^^');
-
         if (queue.length > 0) {
 
             processNextItem();
         }
         else {
             processing = false;
-            //console.log('queue empty, ending process');
+        }
+    }
+
+    function indexOfCharacter (characterList, name) {
+
+        for (var index in characterList) {
+
+            if (characterList[index].vitals.name === name) {
+                return index;
+            }
         }
     }
 
     function removeKilledCharacter (character) {
 
-        //console.log('removing killed character: ', character);
-        var queueTargetIndex = queue.indexOf(character);
+        console.log('QUEUE', queue);
+        console.log('REMOVEKILLEDCHARACTER', character);
+        var queueTargetIndex = indexOfCharacter(queue, character);
 
         if (queueTargetIndex >= 0) {
 
             queue.splice(queueTargetIndex, 1);
         }
+
+        console.log('QUEUE', queue);
     }
 
     function resetQueue () {
 
-        //console.log('battle over, resetting queue, ending process');
         queue = [];
         processing = false;
     }

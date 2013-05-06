@@ -17,7 +17,7 @@ define(['./EventEmitter'], function (Pubsub) {
 
             Pubsub.emitEvent('activitygauge:update', [{
                 readyState : ready,
-                character  : character.vitals.name,
+                character  : character,
                 lastWidth  : lastWidth
             }]);
         }

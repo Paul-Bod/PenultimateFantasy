@@ -316,5 +316,13 @@ define(['./Translations'], function (Translations) {
         return 'damage';
     }
 
+    exports.selectionTypes = {
+        none             : 'none',
+        one              : 'one',
+        all              : 'all',
+        allWithSelection : 'allWithSelection',
+        splash           : 'splash'
+    };
+
     return exports;
 });

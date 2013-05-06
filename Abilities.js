@@ -2,19 +2,11 @@ define(['./MoveSupport', './EventEmitter'], function (MoveSupport, Pubsub) {
 
     var exports = {};
 
-    exports.selectionTypes = {
-        none             : 'none',
-        one              : 'one',
-        all              : 'all',
-        allWithSelection : 'allWithSelection',
-        splash           : 'splash'
-    };
-
     var abilities = {
         // white magic
         cure : {
             name           : 'cure',
-            selectionType  : exports.selectionTypes['one'],
+            selectionType  : MoveSupport.selectionTypes['one'],
             mpCost         : 15,
             experienceCost : 100,
             baseExp        : 3,
@@ -35,7 +27,7 @@ define(['./MoveSupport', './EventEmitter'], function (MoveSupport, Pubsub) {
 
         healingwind : {
             name             : 'healingwind',
-            selectionType    : exports.selectionTypes['all'],
+            selectionType    : MoveSupport.selectionTypes['all'],
             mpCost           : 30,
             experienceCost   : 200,
             baseExp          : 3,
@@ -54,7 +46,7 @@ define(['./MoveSupport', './EventEmitter'], function (MoveSupport, Pubsub) {
 
         healerupt : {
             name           : 'healerupt',
-            selectionType  : exports.selectionTypes['splash'],
+            selectionType  : MoveSupport.selectionTypes['splash'],
             mpCost         : 30,
             experienceCost : 200,
             baseExp        : 3,
@@ -90,7 +82,7 @@ define(['./MoveSupport', './EventEmitter'], function (MoveSupport, Pubsub) {
         // black magic
         fire : {
             name           : 'fire',
-            selectionType  : exports.selectionTypes['one'],
+            selectionType  : MoveSupport.selectionTypes['one'],
             mpCost         : 15,
             experienceCost : 100,
             baseExp        : 3,
@@ -110,7 +102,7 @@ define(['./MoveSupport', './EventEmitter'], function (MoveSupport, Pubsub) {
 
         implosion : {
             name           : 'implosion',
-            selectionType  : exports.selectionTypes['splash'],
+            selectionType  : MoveSupport.selectionTypes['splash'],
             mpCost         : 30,
             experienceCost : 200,
             baseExp        : 3,
@@ -145,7 +137,7 @@ define(['./MoveSupport', './EventEmitter'], function (MoveSupport, Pubsub) {
 
         thunder : {
             name           : 'thunder',
-            selectionType  : exports.selectionTypes['one'],
+            selectionType  : MoveSupport.selectionTypes['one'],
             mpCost         : 15,
             experienceCost : 100,
             baseExp        : 3,
@@ -165,7 +157,7 @@ define(['./MoveSupport', './EventEmitter'], function (MoveSupport, Pubsub) {
 
         storm : {
             name           : 'storm',
-            selectionType  : exports.selectionTypes['all'],
+            selectionType  : MoveSupport.selectionTypes['all'],
             mpCost         : 30,
             experienceCost : 500,
             baseExp        : 3,
@@ -185,7 +177,7 @@ define(['./MoveSupport', './EventEmitter'], function (MoveSupport, Pubsub) {
 
         blizzard : {
             name           : 'blizzard',
-            selectionType  : exports.selectionTypes['one'],
+            selectionType  : MoveSupport.selectionTypes['one'],
             mpCost         : 15,
             experienceCost : 100,
             baseExp        : 3,
@@ -206,7 +198,7 @@ define(['./MoveSupport', './EventEmitter'], function (MoveSupport, Pubsub) {
         // physical
         attack : {
             name           : 'attack',
-            selectionType  : exports.selectionTypes['one'],
+            selectionType  : MoveSupport.selectionTypes['one'],
             mpCost         : '',
             experienceCost : 100,
             baseExp        : 3,
@@ -226,7 +218,7 @@ define(['./MoveSupport', './EventEmitter'], function (MoveSupport, Pubsub) {
 
         cannonball : {
             name           : 'cannonball',
-            selectionType  : exports.selectionTypes['splash'],
+            selectionType  : MoveSupport.selectionTypes['splash'],
             mpCost         : '',
             experienceCost : 200,
             baseExp        : 3,
@@ -262,7 +254,7 @@ define(['./MoveSupport', './EventEmitter'], function (MoveSupport, Pubsub) {
         //neutral
         skip : {
             name           : 'skip',
-            selectionType  : exports.selectionTypes['none'],
+            selectionType  : MoveSupport.selectionTypes['none'],
             mpCost         : '',
             experienceCost : 0,
             baseExp        : 0,
@@ -292,7 +284,8 @@ define(['./MoveSupport', './EventEmitter'], function (MoveSupport, Pubsub) {
             newAbility = {
                 name          : ability,
                 available     : true,
-                selectionType : abilities[ability].selectionType
+                selectionType : abilities[ability].selectionType,
+                type : abilities[ability].details.type
             };
 
         switch (abilities[ability].details.type) {
@@ -354,6 +347,8 @@ define(['./MoveSupport', './EventEmitter'], function (MoveSupport, Pubsub) {
     exports.getAbilities = function () {
         abilities[ability].execute();
     };
+
+    exports.selectionTypes = MoveSupport.selectionTypes;
 
     return exports;
 });

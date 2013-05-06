@@ -4,6 +4,7 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
 
     items = {
         healthvial : {
+            selectionType : MoveSupport.selectionTypes['one'],
             dollarCost : 100,
             baseExp : 3,
             details : { characterClass : 'al',
@@ -34,6 +35,7 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
         },
 
         bomb : {
+            selectionType : MoveSupport.selectionTypes['one'],
             dollarCost : 50,
             baseExp : 3,
             details : { characterClass : 'al',
@@ -71,6 +73,7 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
         },
 
         lifeorb : {
+            selectionType : MoveSupport.selectionTypes['one'],
             dollarCost : 150,
             baseExp : 3,
             details : { characterClass : 'al',
@@ -89,6 +92,7 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
         },
 
         magicvial : {
+            selectionType : MoveSupport.selectionTypes['one'],
             dollarCost : 50,
             baseExp : 3,
             details : { characterClass : 'al',
@@ -150,7 +154,9 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
         else {
             var newItem = {
                 name   : item,
-                amount : amount
+                amount : amount,
+                selectionType : items[item].selectionType,
+                type : items[item].details.type
             };
             partyItems.push(newItem);
             partyItems.sort(function(a, b) {
@@ -189,10 +195,10 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
         return items[item].dollarCost;
     };
 
-    exports.useItem = function (item, itemIndex, user, target, freebie) {
+    exports.useItem = function (item, user, target, freebie) {
 
         if (!freebie) {
-            debitPartyItems(itemIndex);
+            debitPartyItems(getPartyItemIndexByName(item));
         }
 
         return items[item].execute(user, target);

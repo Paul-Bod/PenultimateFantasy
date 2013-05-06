@@ -5,8 +5,10 @@ define([
     './Items',
     './Money',
     './EventEmitter',
-    './Queue'
-], function (view, model, Abilities, Items, Money, Pubsub, Queue) {
+    './Queue',
+    './BattleMenu',
+    './TargetSelection'
+], function (view, model, Abilities, Items, Money, Pubsub, Queue, BattleMenu, TargetSelection) {
 
     var exports = {},
 
@@ -39,6 +41,8 @@ define([
         _battleWon = 'win',
         _battleLost = 'lose',
         _endBattleState = _battleContinue;
+
+    TargetSelection.init(Abilities.selectionTypes);
 
     // define move types
     moves.attack = function(actionId, defender, freebie) {
@@ -403,7 +407,154 @@ define([
 
     function heroMove() {
         view.renderGoMessage(active.vitals.name);
-        view.renderAbilities(active.abilities);
+
+        var battleMenu = BattleMenu.getBattleMenu(active);
+        view.renderBattleMenu(battleMenu);
+
+        Pubsub.addListener('battlemenu:forward', function (menu) {view.renderBattleMenu(menu);});
+        Pubsub.addListener('battlemenu:backward', function (menu) {view.renderBattleMenu(menu);});
+        Pubsub.addListener('battlemenu:cancel', function (menu) {view.renderBattleMenu(menu);});
+        Pubsub.addListener('battlemenu:action', function (characterName, abilityType, abilityName, selectionType) {
+
+            var targetSelector = TargetSelection.getTargetSelector(selectionType, {
+                'characters'   : _characters,
+                'aliveEnemies' : _aliveEnemies,
+                'aliveHeroes'  : _aliveHeroes
+            });
+
+            if (selectionType === Abilities.selectionTypes.none) {
+                handleResult(null);
+            }
+            else {
+                view.renderSelectTarget(targetSelector);
+                Pubsub.addListener('targetselection:selected', function (defender) {
+                    handleResult(defender)
+                    Pubsub.removeEvent('targetselection:selected');
+                });
+            }
+
+            function handleResult (defender) {
+
+                startActivityGauges.call(this);
+
+                if (abilityType === 'neutral') {
+                    Abilities.executeNeutralAbility(abilityName);
+                }
+                else {
+                    if (abilityType === 'item') {
+                        var result = Items.useItem(abilityName, active, defender, false);
+                    }
+                    else {
+                        var result = Abilities.executeAbility(active, defender, abilityName, false);
+                    }
+
+                    view.renderLog(result.message);
+                }
+
+                updateLists(result);
+
+                // update all characters as hero may have used mp
+                view.renderEnemies(enemies);
+                view.renderHeroes(heroes);
+
+                view.renderAbilities(null);
+
+                Pubsub.removeEvent('battlemenu:action');
+
+                // hero go end point
+                var thisInstance = this;
+                setTimeout(function() {moveEnd.call(thisInstance)}, battleDelay);
+            }
+
+            /*var onSingleClick = function (e) {
+
+                var target = e.srcElement.id;
+
+                console.log('onTargetClick', e.srcElement.id);
+
+                if (enemies[target]) {
+                    defender = enemies[target];
+                }
+                else {
+                    defender = heroes[target];
+                }
+
+                console.log('defender', defender);
+
+                handleResult(defender);
+            };
+
+            var onAllClick = function (e) {
+
+                var target = e.currentTarget.id;
+
+                console.log('onTargetClick', e.currentTarget.id);
+
+                switch (target) {
+                    case targetTypes.enemies:
+                        defender = _aliveEnemies;
+                        break;
+
+                    case targetTypes.heroes:
+                        defender = _aliveHeroes;
+                        break;
+                }
+
+                console.log('defender', defender);
+
+                handleResult(defender);
+            };
+
+            var onSplashClick = function (e) {
+
+                var target = e.srcElement.id,
+                    splashTarget = e.srcElement.parentElement.id;
+
+                console.log('focus', e.srcElement.id);
+                console.log('splash', e.srcElement.parentElement.id);
+
+                switch (splashTarget) {
+                    case targetTypes.enemies:
+                        defender = {
+                            'focus' : target,
+                            'target' : _aliveEnemies
+                        };
+                        break;
+
+                    case targetTypes.heroes:
+                        defender = {
+                            'focus' : target,
+                            'target' : _aliveHeroes
+                        };
+                        break;
+                }
+
+                console.log('defender', defender);
+
+                handleResult(defender);
+            };
+
+            switch (selectionType) {
+
+                case Abilities.selectionTypes.none:
+                    handleResult(null);
+                    break;
+
+                case Abilities.selectionTypes.all:
+                    view.renderSelectEnemiesOrHeroes(onAllClick);
+                    break;
+
+                case Abilities.selectionTypes.splash:
+                    view.renderSelectTargetWithSplash(onSplashClick);
+                    break;
+
+                case Abilities.selectionTypes.one:
+                default:
+                    view.renderSelectTarget(onSingleClick);
+                    break;
+            }*/
+        });
+        //view.renderAbilities(active.abilities);
     }
 
     function indexOfCharacter (characterList, name) {
@@ -417,6 +568,8 @@ define([
     }
 
     function updateLists (result) {
+
+        console.log('UPDATE LISTS', result);
 
         var charactersKilled = result.dead,
             charactersRevived = result.alive,
@@ -458,6 +611,8 @@ define([
 
     function queueHandler(nextCharacter) {
 
+        nextCharacter = nextCharacter.vitals.name;
+
         if (heroes[nextCharacter]) {
             active = heroes[nextCharacter];
             heroMove();
@@ -491,9 +646,6 @@ define([
         var focusPos = target.indexOf('-');
 
         if (focusPos > -1) {
-            console.log(focusPos);
-            console.log(target.length);
-            console.log(target);
             var focusTarget = target.substr(focusPos+1, target.length);
             target = target.substr(0, focusPos+1);
         }
@@ -714,7 +866,7 @@ define([
 
     function activityGaugeHandler(gaugeData) {
 
-        view.renderActivityGauge(gaugeData.character, gaugeData.lastWidth);
+        view.renderActivityGauge(gaugeData.character.vitals.name, gaugeData.lastWidth);
     }
 
     exports.getHeroes = function() {
@@ -870,9 +1022,6 @@ define([
 
     exports.getRenderAbilityAttributes = function(ability, abilities, superAction) {
         var itemAttributes = {};
-
-        console.log('ability attributes vv');
-        console.log(ability);
 
         if ($.isArray(abilities[ability])) {
             var idNumber = 'single';

@@ -1,11 +1,12 @@
 {\rtf1\ansi\ansicpg1252\cocoartf1038\cocoasubrtf360
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
-\paperw11900\paperh16840\margl1440\margr1440\vieww21720\viewh16320\viewkind0
+\paperw11900\paperh16840\margl1440\margr1440\vieww15760\viewh15820\viewkind0
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
 
 \f0\fs24 \cf0 NEW FEATURES\
-\strike \strikec0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+\cf0 \strike \strikec0 \
 - money -\
 - shop -\
 - add ether -\strike0\striked0 \
@@ -34,26 +35,32 @@ reward object created in controller.endBattle. Contains money and experience per
 \cf0 restorative moves focused on an individual\
 Queue system with no timeout loops\
 \
-\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+\cf0 \strike0\striked0 Look at select move/select target cycle\strike \strikec0 \
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
-\cf0 \strike0\striked0 Battle menu module\
-	link to hero on ready\
-	holds reference to hero's abilities\
-	creates object for view to render into buttons\
-		id, name, click\
-	handles back / cancel\
-	emits event on ability selection with ability name, selection type and character\
-	if selection type is none, emits execute ability without selection event\
-\
-target selection module\
-	listens to battle menu event\
-	defines click handlers for target selection\
-	emits execute ability with selection event on clicks with ability name, defender and attacker\
-\
-Abilities module listens for execute events. Execute not called directly.\
-	\strike \strikec0 \
+\cf0 \strike0\striked0 	\strike \strikec0 Battle menu module\
+		link to hero on ready\
+		holds reference to hero's abilities\
+		creates object for view to render into buttons\
+			id, name, isDisabled, clickAction\
+		handles back / cancel\
+		emits event on ability selection with ability name, selection type and character\
+		if selection type is none, emits execute ability without selection event\strike0\striked0 \
+	\strike \strikec0 target selection module\
+		Creates object defining click handlers and to which view object they should apply based on selectionType i.e. from\
+		getRenderAbilityAttributes\
+		Each click handler should create a defender object for emitting with Pubsub event i.e. from heroBattleEvent. Controller\
+		will need to be able to map values in defender object to character lists when receiving event for calling Abilities or Item\
+		in heroMove\
+		Controller will need to handle game driving elements such as pausing and starting ATB gauges and refreshing displays\strike0\striked0 \
+		\
+	Abilities module listens for execute events. Execute not called directly.\
+	Utils.createBattleAbilities creates list of ability names and selection types\
+	In enemyMove, if the selected ability requires targets, call enemySelectTarget. Emit relevant event\
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
-\cf0 \
+\cf0 \strike \strikec0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf0 \strike0\striked0 Items to use new MoveSupport API\strike \strikec0 \
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
 \cf0 \strike0\striked0 Skip to other players ready in queue\
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
@@ -61,13 +68,11 @@ Abilities module listens for execute events. Execute not called directly.\
 achievements to model\
 Menu messages to store with menu\
 First loss message\
-Look at select move/select target cycle\
-	don't pass superAction around?\
-	controller pauses itself?\
-\strike \strikec0 - rename magic vile to vial -\strike0\striked0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+\cf0 \strike \strikec0 - rename magic vile to vial -\strike0\striked0 \
 \
 review experience relating to level\
-upgrade hp/mp\
+upgrade hp/mp (vitality/spirit)\
 restart activity gauge on back?\
 accuracy\
 evasion\
