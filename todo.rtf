@@ -36,7 +36,7 @@ reward object created in controller.endBattle. Contains money and experience per
 Queue system with no timeout loops\
 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
-\cf0 \strike0\striked0 Look at select move/select target cycle\strike \strikec0 \
+\cf0 \strikec0 Look at select move/select target cycle\strikec0 \
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
 \cf0 \strike0\striked0 	\strike \strikec0 Battle menu module\
 		link to hero on ready\
@@ -54,15 +54,16 @@ Queue system with no timeout loops\
 		in heroMove\
 		Controller will need to handle game driving elements such as pausing and starting ATB gauges and refreshing displays\strike0\striked0 \
 		\
-	Abilities module listens for execute events. Execute not called directly.\
-	Utils.createBattleAbilities creates list of ability names and selection types\
-	In enemyMove, if the selected ability requires targets, call enemySelectTarget. Emit relevant event\
+	\strike \strikec0 Utils.createBattleAbilities creates list of ability names and selection types\strike0\striked0 \
+	\strike \strikec0 In enemyMove, if the selected ability requires targets, call enemySelectTarget. Emit relevant event\strike0\striked0 \
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
 \cf0 \strike \strikec0 \
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
-\cf0 \strike0\striked0 Items to use new MoveSupport API\strike \strikec0 \
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
-\cf0 \strike0\striked0 Skip to other players ready in queue\
+\cf0 \strike0\striked0 Items to use new MoveSupport API\
+Skip to other players ready in queue\
+Create BattleController.js, PowerUpController.js and ShopController.js moving relevant logic from Controller.js.\
+Create BattleView.js, PowerUpView.js and ShopView.js moving relevant logic from View.js\
+Move things into Utils. E.g. getCharacterIndex\
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
 \cf0 moves targeting a configurable number of targets\
 achievements to model\

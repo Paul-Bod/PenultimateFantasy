@@ -76,6 +76,13 @@ define(['./EventEmitter'], function (Pubsub) {
         return targetSelector;
     }
 
+    function selectRandomTarget (targets) {
+
+        var randomNum = Math.random(),
+            randomTarget = Math.floor(randomNum * (targets.length));
+        return targets[randomTarget];
+    }
+
     exports.getTargetSelector = function (selectionType, gameTargets) {
 
         var targetSelector = null;
@@ -83,6 +90,26 @@ define(['./EventEmitter'], function (Pubsub) {
         targets = gameTargets;
 
         return getTargetSelector(selectionType);
+    };
+
+    exports.selectRandomTarget = function (selectionType, targets) {
+
+        var selection = null;
+
+        switch (selectionType) {
+
+            case selectionTypes.all:
+                selection = targets;
+                break;
+
+            case selectionTypes.splash:
+            case selectionTypes.one:
+            default:
+                selection = selectRandomTarget(targets);
+                break;
+        }
+
+        return selection;
     };
 
     exports.init = function (gameSelectionTypes) {

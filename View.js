@@ -335,27 +335,6 @@ define(['./Translations'], function (Translations) {
             saCounter--;
         },
 
-        renderBattleBackButton = function() {
-            var menuItems = battleMenus[battleMenuCounter-1],
-                topMenu = superActions[saCounter-1],
-                recallRenderAbilities = exports.renderAbilities,
-                _this = this,
-                backButton = $('<button>'),
-                abilitiesList = $('#abilities');
-
-            backButton.attr('type', 'button');
-            backButton.html('back');
-            backButton.attr('id', 'backbutton');
-
-            backButton.click(function() {
-                unlogBattleMenu.call(_this);
-                unlogSuperAction.call(_this);
-                recallRenderAbilities.call(_this, menuItems, topMenu, true);
-            });
-
-            abilitiesList.append(backButton);
-        },
-
         renderBackButton = function() {
             var menuItems = menus[menuCounter-1],
                 _this = this,
@@ -394,18 +373,10 @@ define(['./Translations'], function (Translations) {
 
         exports.renderSelectTarget = function(onTargetClick) {
 
-            console.log('RENDER SELECT TARGET');
             var enemies = $("#enemies"),
                 heroes = $("#heroes"),
                 logMess = Translations.translate('battle_selecttarget');
 
-            //renderCancelButton.call(this);
-
-            // optional argument
-            /*if (!superAction) {
-                var superAction = false;
-            }*/
-            
             exports.renderLog(logMess);
 
             var applyClickHandler = function () {
@@ -414,10 +385,7 @@ define(['./Translations'], function (Translations) {
 
                 child.click(function (e) {
                     e.preventDefault();
-                    console.log('TARGET CLICKED');
                     onTargetClick(e.srcElement.id, e.srcElement.parentElement.id)
-                    //enemies.unbind('click');
-                    //heroes.unbind('click');
                     enemies.children().each(function () {$(this).unbind('click')});
                     heroes.children().each(function () {$(this).unbind('click')});
                 });
@@ -425,77 +393,36 @@ define(['./Translations'], function (Translations) {
 
             enemies.children().each(applyClickHandler);
             heroes.children().each(applyClickHandler);
-
-            controller.pause();
         };
 
-        exports.renderSelectTargetWithSplash = function (onTargetClick) {
+    exports.renderBattleMenu = function (menu) {
 
-            var enemies = $("#enemies"),
-                heroes = $("#heroes"),
-                logMess = Translations.translate('battle_selecttarget');
+        var abilitiesList = $('#abilities');
 
-            //renderCancelButton.call(this);
+        $('#abilities').empty();
 
-            // optional argument
-            /*if (!superAction) {
-                var superAction = false;
-            }*/
-            
-            exports.renderLog(logMess);
+        for (var ability in menu) {
 
-            var applyClickHandler = function () {
+            var item = $('<button>');
+            item.attr('type', 'button');
 
-                var child = $(this);
+            var itemAttributes = menu[ability];
 
-                child.click(onTargetClick);
-
-                child.click(function (e) {
-                    //var selectionId = e.srcElement.parentElement.id + '-' + e.srcElement.id;
-                    //controller.heroBattleEvent(action, selectionId);
-                    enemies.unbind('click');
-                    heroes.unbind('click');
-                });
+            item.html(itemAttributes.html);
+            item.attr('id', itemAttributes.id);
+            if (itemAttributes.isDisabled) {
+                item.attr('disabled', 'disabled');
             }
+            item.click(itemAttributes.clickAction);
 
-            enemies.children().each(applyClickHandler);
-            heroes.children().each(applyClickHandler);
+            abilitiesList.append(item);
+            abilitiesList.append($('<br/>'));
+        }
+    };
 
-            controller.pause();
-        };
-
-        exports.renderSelectEnemiesOrHeroes = function (onTargetClick) {
-
-            var enemies = $('#enemies'),
-                heroes = $('#heroes'),
-                logMess = Translations.translate('battle_selectenemiesorheroes');
-
-            //renderCancelButton.call(this);
-
-            /*if (!superAction) {
-                var superAction = false;
-            }*/
-
-            exports.renderLog(logMess);
-
-            enemies.click(onTargetClick);
-
-            enemies.click(function (e) {
-                //controller.heroBattleEvent(action, e.currentTarget.id);
-                enemies.unbind('click');
-                heroes.unbind('click');
-            });
-
-            heroes.click(onTargetClick);
-
-            heroes.click(function (e) {
-                //controller.heroBattleEvent(action, e.currentTarget.id);
-                heroes.unbind('click');
-                enemies.unbind('click');
-            });
-
-            controller.pause();
-        };
+    exports.clearBattleMenu = function () {
+        $('#abilities').empty();
+    };
 
     exports.renderBattleSummary = function(rewards, heroes, resultMessage) {
 
@@ -625,81 +552,6 @@ define(['./Translations'], function (Translations) {
 
     exports.renderGoMessage = function(name) {
         exports.renderLog(Translations.translate('battle_go', [name]));
-    };
-
-    exports.renderBattleMenu = function (menu) {
-
-        var abilitiesList = $('#abilities');
-
-        $('#abilities').empty();
-
-        for (var ability in menu) {
-
-            var item = $('<button>');
-            item.attr('type', 'button');
-
-            var itemAttributes = menu[ability];
-
-            item.html(itemAttributes.html);
-            item.attr('id', itemAttributes.id);
-            if (itemAttributes.isDisabled) {
-                item.attr('disabled', 'disabled');
-            }
-            item.click(itemAttributes.clickAction);
-
-            abilitiesList.append(item);
-            abilitiesList.append($('<br/>'));
-        }
-    };
-
-    exports.renderAbilities = function(abilities, superAction, back) {
-
-        // optional arguments
-        if (typeof superAction === 'undefined') {
-            superAction = false;
-        }
-
-        if (typeof back === 'undefined') {
-            back = false;
-        }
-
-        if (abilities) {
-            var menuLevel = abilities;
-            var abilitiesList = $('#abilities');
-            var _this = this;
-
-            $('#abilities').empty();
-
-            for (var ability in abilities) {
-
-                var item = $('<button>');
-                item.attr('type', 'button');
-
-                var itemAttributes = controller.getRenderAbilityAttributes(ability, abilities, superAction);
-
-                item.html(itemAttributes.html);
-                item.attr('id', itemAttributes.id);
-                if (itemAttributes.isDisabled) {
-                    item.attr('disabled', 'disabled');
-                }
-                item.click(itemAttributes.clickAction);
-
-                abilitiesList.append(item);
-                abilitiesList.append($('<br/>'));
-            }
-
-            if (!back) {
-                logBattleMenu(menuLevel);
-                logSuperAction(superAction);
-            }
-
-            if (superAction) {
-                renderBattleBackButton.call(_this);
-            }
-        }
-        else {
-            $('#abilities').empty();
-        }
     };
 
     exports.renderLog = function(message) {

@@ -7,12 +7,11 @@ define([
     './EventEmitter',
     './Queue',
     './BattleMenu',
-    './TargetSelection'
-], function (view, model, Abilities, Items, Money, Pubsub, Queue, BattleMenu, TargetSelection) {
+    './TargetSelection',
+    './Utils'
+], function (view, model, Abilities, Items, Money, Pubsub, Queue, BattleMenu, TargetSelection, Utils) {
 
     var exports = {},
-
-        moves = {},
 
         active,
         nextMove,
@@ -44,114 +43,36 @@ define([
 
     TargetSelection.init(Abilities.selectionTypes);
 
-    // define move types
-    moves.attack = function(actionId, defender, freebie) {
-        var result = Abilities.executeAbility(active, defender, 'attack', freebie);
-
-        updateLists(result);
+    function moveEnd(result) {
 
         view.renderLog(result.message);
-    };
-
-    moves.magic = function(actionId, defender, freebie) {
-        var spell = actionId[2],
-            result = Abilities.executeAbility(active, defender, spell, freebie);
-
         updateLists(result);
 
-        view.renderLog(result.message);
-    };
+        // update all characters as hero may have used mp
+        view.renderEnemies(enemies);
+        view.renderHeroes(heroes);
+        view.clearBattleMenu();
 
-    moves.skills = function(actionId, defender, freebie) {
-        var skill = actionId[2],
-            result = Abilities.executeAbility(active, defender, skill, freebie);
+        setTimeout(function() {
 
-        updateLists(result);
+            _endBattleState = checkEndBattle();
 
-        view.renderLog(result.message);
-    };
+            if (_endBattleState === _battleContinue) {
 
-    moves.items = function(actionId, defender, freebie) {
-        var itemIndex = actionId[1],
-            item = actionId[2],
-            result = Items.useItem(item, itemIndex, active, defender, freebie);
+                if (active.vitals.baseType === 'hero') {
+                    startActivityGauges.call(this);
+                }
 
-        updateLists(result);
-        view.renderLog(result.message);
-    };
-
-    moves.skip = function (actionId, defender, freebie) {
-
-        var ability = actionId[2]
-        Abilities.executeNeutralAbility(ability);
-    };
-
-    function getName(type) {
-        //these weird character sets are intended to cope with the nature of English (e.g. char 'x' pops up less frequently than char 's')
-        //note: 'h' appears as consonants and vocals
-        var minlength,
-            maxlength,
-            vocals = 'aeiouyh' + 'aeiou' + 'aeiou',
-            cons = 'bcdfghjklmnpqrstvwxz' + 'bcdfgjklmnprstvw' + 'bcdfgjklmnprst',
-            allchars = vocals + cons,
-            length,
-            consnum = 0,
-            name = '',
-            charSet,
-            nextChar;
-
-        switch (type) {
-            case 'easyMonster':
-                minlength = 6;
-                maxlength = 8;
-                break;
-            case 'mediumMonster':
-                minlength = 4;
-                maxlength = 5;
-                break;
-            default:
-                minlength = 6;
-                maxlength = 8;
-                break;
-        }
-
-        length = Math.floor(Math.random()*(maxlength-minlength)) + minlength;
-        
-        for (var i = 0; i < length; i++) {
-            //if we have used 2 consonants, the next char must be vocal.
-            if (consnum == 2) {
-                charSet = vocals;
-                consnum = 0;
+                if (active.vitals.state !== 'dead') {
+                    active.activityGauge.restart(this);
+                }
             }
             else {
-                charSet = allchars;
+                endBattle();
             }
-            //pick a random character from the set we are goin to use.
-            nextChar = charSet.charAt(Math.floor(Math.random()*(charSet.length-1)));
-            name += nextChar;
-            if (cons.indexOf(nextChar) != -1) { 
-                consnum++;
-            }
-        }
-        name = name.charAt(0).toUpperCase() + name.substring(1, name.length);
-        return name;
-    }
 
-    function moveEnd() {
-
-        _endBattleState = checkEndBattle();
-
-        if (_endBattleState === _battleContinue) {
-
-            if (active.vitals.state !== 'dead') {
-                active.activityGauge.restart(this);
-            }
-        }
-        else {
-            endBattle();
-        }
-
-        Pubsub.emitEvent('controller:move:end');
+            Pubsub.emitEvent('controller:move:end');
+        }, battleDelay);
     }
 
     function finaliseExp() {
@@ -259,6 +180,9 @@ define([
         );
     }
 
+    /**
+     * TODO: UTILS
+     */
     function operateOnAllHeroes(operation, params) {
         if (typeof params === 'undefined') {
             params = {};
@@ -354,55 +278,33 @@ define([
         return _battleContinue;
     }
 
-    function enemySelectAbility() {
-        var enemyAbilities = new Array,
-            randomNum = Math.random(),
-            randomAbility;
+    function executeMove (type, name, defender, freebie) {
 
-        for (ability in active.abilities) {
-            enemyAbilities.push(ability);
+        var result = {};
+
+        if (type === 'neutral') {
+            Abilities.executeNeutralAbility(name);
+        }
+        else {
+            if (type === 'item') {
+                result = Items.useItem(name, active, defender, false);
+            }
+            else {
+                result = Abilities.executeAbility(active, defender, name, false);
+            }
+
         }
 
-        randomAbility = Math.floor(randomNum * (enemyAbilities.length));
-        return enemyAbilities[randomAbility];
-    }
-
-    function enemySelectTarget() {
-        var heroTargets,
-            randomNum = Math.random(),
-            randomHero;
-
-        heroTargets = operateOnAllHeroes.call(
-            this,
-            function(hero) {
-                if (hero.vitals.state === 'alive') {
-                    this.params.push(hero.vitals.name);
-                }
-                return true;
-            },
-            []
-        );
-
-        randomHero = Math.floor(randomNum * (heroTargets.length));
-        return heroTargets[randomHero];
+        return result;
     }
 
     function enemyMove() {
-        var target,
-            nextMove,
-            nextMoveId = active.selectAbility();
-
-        nextMoveId = nextMoveId.split('.');
-
-        target = enemySelectTarget();
-
-        moves[nextMoveId[0]](nextMoveId, heroes[target], true);
-
-        view.renderHeroes(heroes);
-
-        // enemy go end point
+        
+        var ability = active.selectAbility();
+        var target = TargetSelection.selectRandomTarget(ability.selectionType, _aliveHeroes);
+        var result = executeMove(ability.type, ability.name, target, true);
         var thisInstance = this;
-        setTimeout(function() {moveEnd.call(thisInstance)}, battleDelay);
+        moveEnd.call(thisInstance, result);
     }
 
     function heroMove() {
@@ -411,9 +313,11 @@ define([
         var battleMenu = BattleMenu.getBattleMenu(active);
         view.renderBattleMenu(battleMenu);
 
-        Pubsub.addListener('battlemenu:forward', function (menu) {view.renderBattleMenu(menu);});
-        Pubsub.addListener('battlemenu:backward', function (menu) {view.renderBattleMenu(menu);});
-        Pubsub.addListener('battlemenu:cancel', function (menu) {view.renderBattleMenu(menu);});
+        var renderBattleMenu = function (menu) {view.renderBattleMenu(menu)};
+
+        Pubsub.addListener('battlemenu:forward', renderBattleMenu);
+        Pubsub.addListener('battlemenu:backward', renderBattleMenu);
+        Pubsub.addListener('battlemenu:cancel', renderBattleMenu);
         Pubsub.addListener('battlemenu:action', function (characterName, abilityType, abilityName, selectionType) {
 
             var targetSelector = TargetSelection.getTargetSelector(selectionType, {
@@ -426,6 +330,7 @@ define([
                 handleResult(null);
             }
             else {
+                stopActivityGauges();
                 view.renderSelectTarget(targetSelector);
                 Pubsub.addListener('targetselection:selected', function (defender) {
                     handleResult(defender)
@@ -435,126 +340,14 @@ define([
 
             function handleResult (defender) {
 
-                startActivityGauges.call(this);
-
-                if (abilityType === 'neutral') {
-                    Abilities.executeNeutralAbility(abilityName);
-                }
-                else {
-                    if (abilityType === 'item') {
-                        var result = Items.useItem(abilityName, active, defender, false);
-                    }
-                    else {
-                        var result = Abilities.executeAbility(active, defender, abilityName, false);
-                    }
-
-                    view.renderLog(result.message);
-                }
-
-                updateLists(result);
-
-                // update all characters as hero may have used mp
-                view.renderEnemies(enemies);
-                view.renderHeroes(heroes);
-
-                view.renderAbilities(null);
-
+                var result = executeMove(abilityType, abilityName, defender, false);
                 Pubsub.removeEvent('battlemenu:action');
 
                 // hero go end point
                 var thisInstance = this;
-                setTimeout(function() {moveEnd.call(thisInstance)}, battleDelay);
+                moveEnd.call(thisInstance, result);
             }
-
-            /*var onSingleClick = function (e) {
-
-                var target = e.srcElement.id;
-
-                console.log('onTargetClick', e.srcElement.id);
-
-                if (enemies[target]) {
-                    defender = enemies[target];
-                }
-                else {
-                    defender = heroes[target];
-                }
-
-                console.log('defender', defender);
-
-                handleResult(defender);
-            };
-
-            var onAllClick = function (e) {
-
-                var target = e.currentTarget.id;
-
-                console.log('onTargetClick', e.currentTarget.id);
-
-                switch (target) {
-                    case targetTypes.enemies:
-                        defender = _aliveEnemies;
-                        break;
-
-                    case targetTypes.heroes:
-                        defender = _aliveHeroes;
-                        break;
-                }
-
-                console.log('defender', defender);
-
-                handleResult(defender);
-            };
-
-            var onSplashClick = function (e) {
-
-                var target = e.srcElement.id,
-                    splashTarget = e.srcElement.parentElement.id;
-
-                console.log('focus', e.srcElement.id);
-                console.log('splash', e.srcElement.parentElement.id);
-
-                switch (splashTarget) {
-                    case targetTypes.enemies:
-                        defender = {
-                            'focus' : target,
-                            'target' : _aliveEnemies
-                        };
-                        break;
-
-                    case targetTypes.heroes:
-                        defender = {
-                            'focus' : target,
-                            'target' : _aliveHeroes
-                        };
-                        break;
-                }
-
-                console.log('defender', defender);
-
-                handleResult(defender);
-            };
-
-            switch (selectionType) {
-
-                case Abilities.selectionTypes.none:
-                    handleResult(null);
-                    break;
-
-                case Abilities.selectionTypes.all:
-                    view.renderSelectEnemiesOrHeroes(onAllClick);
-                    break;
-
-                case Abilities.selectionTypes.splash:
-                    view.renderSelectTargetWithSplash(onSplashClick);
-                    break;
-
-                case Abilities.selectionTypes.one:
-                default:
-                    view.renderSelectTarget(onSingleClick);
-                    break;
-            }*/
         });
-        //view.renderAbilities(active.abilities);
     }
 
     function indexOfCharacter (characterList, name) {
@@ -568,8 +361,6 @@ define([
     }
 
     function updateLists (result) {
-
-        console.log('UPDATE LISTS', result);
 
         var charactersKilled = result.dead,
             charactersRevived = result.alive,
@@ -638,70 +429,6 @@ define([
         return options;
     };
 
-    exports.heroBattleEvent = function(actionId, target) {
-        var defender;
-
-        startActivityGauges.call(this);
-
-        var focusPos = target.indexOf('-');
-
-        if (focusPos > -1) {
-            var focusTarget = target.substr(focusPos+1, target.length);
-            target = target.substr(0, focusPos+1);
-        }
-
-        switch (target) {
-
-            case targetTypes.none:
-                defender = null;
-                break;
-
-            case targetTypes.enemies:
-                defender = _aliveEnemies;
-                break;
-
-            case targetTypes.enemiesWithFocus:
-                defender = {
-                    'focus' : focusTarget,
-                    'target' : _aliveEnemies
-                };
-                break;
-
-            case targetTypes.heroes:
-                defender = _aliveHeroes;
-                break;
-
-            case targetTypes.heroesWithFocus:
-                defender = {
-                    'focus' : focusTarget,
-                    'target' : _aliveHeroes
-                };
-                break;
-
-            default:
-                if (enemies[target]) {
-                    defender = enemies[target];
-                }
-                else {
-                    defender = heroes[target];
-                }
-        }
-
-        actionId = actionId.split('.');
-        var action = actionId[0];
-        moves[action](actionId, defender, false);
-
-        // update all characters as hero may have used mp
-        view.renderEnemies(enemies);
-        view.renderHeroes(heroes);
-
-        view.renderAbilities(null);
-
-        // hero go end point
-        var thisInstance = this;
-        setTimeout(function() {moveEnd.call(thisInstance)}, battleDelay);
-    };
-
     exports.initialiseHeroes = function(heroesToInitialise) {
 
         var name,
@@ -733,7 +460,7 @@ define([
         for (var i = 0; i<numMonsters; i++) {
             randomType = Math.floor(Math.random() * monsterTypes.length);
             typeSelection = monsterTypes[randomType];
-            name = getName(difficulty);
+            name = Utils.generateName(difficulty);
             monster = difficulty + typeSelection;
 
             enemies[name] = new model[monster](name);
@@ -754,7 +481,7 @@ define([
         switch (difficulty) {
             case 'easy':
                 minMonsters = 2;
-                maxMonsters = 2;
+                maxMonsters = 6;
                 createRandomEnemies(minMonsters, maxMonsters, difficulty);
                 break;
             case 'medium':
@@ -775,7 +502,7 @@ define([
 
     };
 
-    function createHeroBattleAbilities () {
+    function initialiseHeroes () {
         
         _aliveHeroes = [];
 
@@ -806,8 +533,7 @@ define([
         });
 
         initialiseEnemies(difficulty);
-
-        createHeroBattleAbilities();
+        initialiseHeroes();
 
         view.renderBattleField();
         view.renderEnemies(enemies);
@@ -860,10 +586,6 @@ define([
         );
     }
 
-    exports.pause = function() {
-        stopActivityGauges();
-    };
-
     function activityGaugeHandler(gaugeData) {
 
         view.renderActivityGauge(gaugeData.character.vitals.name, gaugeData.lastWidth);
@@ -886,6 +608,9 @@ define([
         return heroes[hero].attributes;
     };
 
+    /**
+     * TODO: Very similar to Utils.createBattleAbilities.
+     */
     function unpack(abilities) {
         var absObj = {};
         
@@ -1018,59 +743,6 @@ define([
                 break;
         }
         return cost;
-    };
-
-    exports.getRenderAbilityAttributes = function(ability, abilities, superAction) {
-        var itemAttributes = {};
-
-        if ($.isArray(abilities[ability])) {
-            var idNumber = 'single';
-            var idName = ability;
-            var idSuper = superAction ? superAction : ability;
-            itemAttributes.html = ability;
-            itemAttributes.isDisabled = false;
-            var recallAbilities = abilities[ability];
-            var recallAbility = ability;
-            itemAttributes.clickAction = function() {view.renderAbilities(recallAbilities, recallAbility)};
-        }
-        else {
-            var idNumber = (ability == abilities[ability].name) ? 'single' : ability;
-            var idName = abilities[ability].name;
-            var idSuper = superAction ? superAction : abilities[ability].name;
-            itemAttributes.html = abilities[ability].name;
-            if (typeof abilities[ability].available !== 'undefined' && abilities[ability].available === false) {
-                itemAttributes.isDisabled = true;
-            }
-
-            var cost = getBattleCost(idNumber, idName, superAction);
-            if (cost !== '') {
-                itemAttributes.html += ' ' + cost;
-            }
-
-            switch (abilities[ability].selectionType) {
-
-                case Abilities.selectionTypes.none:
-                    itemAttributes.clickAction = function (e) {exports.heroBattleEvent(e.srcElement.id, targetTypes.none)};
-                    break;
-
-                case Abilities.selectionTypes.all:
-                    itemAttributes.clickAction = function (e) {view.renderSelectEnemiesOrHeroes(e.srcElement.id, superAction)};
-                    break;
-
-                case Abilities.selectionTypes.splash:
-                    itemAttributes.clickAction = function (e) {view.renderSelectTargetWithSplash(e.srcElement.id, superAction)};
-                    break;
-
-                case Abilities.selectionTypes.one:
-                default:
-                    itemAttributes.clickAction = function (e) {view.renderSelectTarget(e.srcElement.id, superAction)};
-                    break;
-            }
-        }
-
-        itemAttributes.id = idSuper + '.' + idNumber + '.' + idName;
-
-        return itemAttributes;
     };
 
     exports.getHeroChoices = function () {
