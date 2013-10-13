@@ -48,16 +48,12 @@ define(['./EventEmitter'], function (Pubsub) {
 
     function removeKilledCharacter (character) {
 
-        console.log('QUEUE', queue);
-        console.log('REMOVEKILLEDCHARACTER', character);
         var queueTargetIndex = indexOfCharacter(queue, character);
 
         if (queueTargetIndex >= 0) {
 
             queue.splice(queueTargetIndex, 1);
         }
-
-        console.log('QUEUE', queue);
     }
 
     function resetQueue () {

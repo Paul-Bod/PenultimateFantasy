@@ -339,7 +339,6 @@ define([
             }
 
             function handleResult (defender) {
-
                 var result = executeMove(abilityType, abilityName, defender, false);
                 Pubsub.removeEvent('battlemenu:action');
 

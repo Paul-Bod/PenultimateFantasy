@@ -16,7 +16,6 @@ define(['./EventEmitter'], function (Pubsub) {
     };
 
     var allTargetSelector = function (target) {
-
         var defender = null;
 
         switch (target) {
@@ -28,12 +27,10 @@ define(['./EventEmitter'], function (Pubsub) {
                 defender = targets.aliveHeroes;
                 break;
         }
-
         Pubsub.emitEvent('targetselection:selected', [defender]);
     };
 
     var splashTargetSelector = function (focusTarget, splashTarget) {
-
         var defender = {
             'focus'  : focusTarget,
             'target' : null
@@ -53,13 +50,12 @@ define(['./EventEmitter'], function (Pubsub) {
     };
 
     function getTargetSelector (selectionType) {
-    
         var targetSelector = function (target, targetGroup) {
 
             switch (selectionType) {
 
                 case selectionTypes.all:
-                    allTargetSelector(target);
+                    allTargetSelector(targetGroup);
                     break;
 
                 case selectionTypes.splash:

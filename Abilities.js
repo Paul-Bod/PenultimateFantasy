@@ -170,7 +170,6 @@ define(['./MoveSupport', './EventEmitter'], function (MoveSupport, Pubsub) {
                 },
             execute        :
                 function (active, defenders) {
-
                     return MoveSupport.executeManyOffensive(active, defenders, this);
                 }
         },
