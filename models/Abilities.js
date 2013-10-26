@@ -1,4 +1,4 @@
-define(['./MoveSupport', './EventEmitter'], function (MoveSupport, Pubsub) {
+define(['../utils/MoveSupport', '../lib/EventEmitter'], function (MoveSupport, Pubsub) {
 
     var exports = {};
 

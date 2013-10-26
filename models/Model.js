@@ -1,4 +1,4 @@
-define(['./Abilities', './Items', './Utils', 'ActivityGauge'], function (Abilities, Items, Utils, ActivityGauge) {
+define(['./Abilities', './Items', '../utils/Utils', './ActivityGauge'], function (Abilities, Items, Utils, ActivityGauge) {
 
     var exports = {},
 

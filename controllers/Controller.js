@@ -1,14 +1,14 @@
 define([
-    './View',
-    './Model',
-    './Abilities',
-    './Items',
-    './Money',
-    './EventEmitter',
-    './Queue',
-    './BattleMenu',
-    './TargetSelection',
-    './Utils'
+    '../views/View',
+    '../models/Model',
+    '../models/Abilities',
+    '../models/Items',
+    '../models/Money',
+    '../lib/EventEmitter',
+    '../models/Queue',
+    '../models/BattleMenu',
+    '../models/TargetSelection',
+    '../utils/Utils'
 ], function (view, model, Abilities, Items, Money, Pubsub, Queue, BattleMenu, TargetSelection, Utils) {
 
     var exports = {},

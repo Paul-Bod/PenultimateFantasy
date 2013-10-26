@@ -1,4 +1,4 @@
-define(['./Translations'], function (Translations) {
+define(['../utils/Translations'], function (Translations) {
 
     String.prototype.firstToUpper = function () {
         return this.charAt(0).toUpperCase() + this.slice(1);

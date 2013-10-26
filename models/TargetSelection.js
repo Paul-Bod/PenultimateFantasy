@@ -1,4 +1,4 @@
-define(['./EventEmitter'], function (Pubsub) {
+define(['../lib/EventEmitter'], function (Pubsub) {
 
     var exports = {},
         selectionTypes = null,

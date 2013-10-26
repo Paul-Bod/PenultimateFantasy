@@ -1,4 +1,4 @@
-define(['./EventEmitter'], function (Pubsub) {
+define(['../lib/EventEmitter'], function (Pubsub) {
 
     function ActivityGauge(character) {
         var activityConstant = 20,

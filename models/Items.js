@@ -1,4 +1,4 @@
-define(['./MoveSupport', './Translations'], function (MoveSupport, Translations) {
+define(['../utils/MoveSupport', '../utils/Translations'], function (MoveSupport, Translations) {
 
     var exports = {},
 
