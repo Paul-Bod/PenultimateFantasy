@@ -34,8 +34,15 @@ define(['./Translations'], function (Translations) {
         return 1;
     }
 
-    function executeOffensive (active, defender, ability, modifiers) {
+    function getDamageWithDefense(baseDamage, defense, defenderLevel, baseMultiplier, element, resistance) {
+        var damage = baseDamage / getDefenseFactor(defense, defenderLevel);
+        damage *= baseMultiplier;
+        damage *= getResistanceMultiplier(element, resistance);
+        damage *= getRandomMultiplier();
+        return parseInt(Math.ceil(damage));
+    }
 
+    function executeOffensive (active, defender, ability, modifiers) {
         var resistance = exports.getResistanceToMove(ability.details.element, defender.resistances);
 
         if (resistance === 'immune') {
@@ -46,31 +53,51 @@ define(['./Translations'], function (Translations) {
             damage,
             attack,
             defense,
-            logMess;
+            logMess,
+            translationPrefix;
 
-        if (ability.details.type === 'magic') {
-            attack = active.attributes.magic;
-            defense = defender.attributes.magicdefense;
+        switch(ability.details.type) {
+            case 'item':
+                translationPrefix = 'items';
+                damage = getDamageWithDefense(
+                    ability.baseDamage,
+                    defender.attributes.defense,
+                    defender.training.level,
+                    ability.getBaseMultiplier(modifiers),
+                    ability.details.element,
+                    resistance
+                );
+                break;
+            case 'magic':
+                translationPrefix = 'abilities';
+                damage = exports.getDamageWithDefenseAndAttack(
+                    active.attributes.magic,
+                    active.training.level,
+                    defender.attributes.magicdefense,
+                    defender.training.level,
+                    ability.getBaseMultiplier(modifiers),
+                    ability.details.element,
+                    resistance
+                );
+                break;
+            default:
+                translationPrefix = 'abilities';
+                damage = exports.getDamageWithDefenseAndAttack(
+                    active.attributes.strength,
+                    active.training.level,
+                    defender.attributes.defense,
+                    defender.training.level,
+                    ability.getBaseMultiplier(modifiers),
+                    ability.details.element,
+                    resistance
+                );
+                break;
         }
-        else {
-            attack = active.attributes.strength;
-            defense = defender.attributes.defense;
-        }
-
-        damage = exports.getDamageWithDefenseAndAttack(
-            attack,
-            active.training.level,
-            defense,
-            defender.training.level,
-            ability.getBaseMultiplier(modifiers),
-            ability.details.element,
-            resistance
-        );
 
         action = exports.getActionFromResistance(resistance);
         defender.receive[action](damage);
 
-        logMess = Translations.translate('abilities_' + ability.name + Translations.getResistanceKey(resistance) + '_message', [active.vitals.name, defender.vitals.name, damage]);
+        logMess = Translations.translate(translationPrefix + '_' + ability.name + Translations.getResistanceKey(resistance) + '_message', [active.vitals.name, defender.vitals.name, damage]);
 
         return logMess;
     }
@@ -94,14 +121,14 @@ define(['./Translations'], function (Translations) {
         return logMess;
     }
 
-    function assignMoveExperienceToHero (active, defenderDeathExp, baseExp, abilityCharacterClass) {
+    exports.assignMoveExperienceToHero = function(active, defenderDeathExp, baseExp, abilityCharacterClass) {
 
         if (active.vitals.baseType === 'hero') {
             active.receive.collectedExp(exports.getMoveExperience(defenderDeathExp, baseExp, abilityCharacterClass, active));
         }
-    }
+    };
 
-    function getOnDeathExperience (defenderState, deathExperience) {
+    exports.getOnDeathExperience = function(defenderState, deathExperience) {
         var exp = 0;
 
         if (defenderState === 'dead') {
@@ -109,6 +136,13 @@ define(['./Translations'], function (Translations) {
         }
 
         return exp;
+    }
+
+    function getModifiers(activeType, splashIndex) {
+        return {
+            'activeType'  : activeType,
+            'splashIndex' : splashIndex
+        };
     }
 
     function executeOne (active, defender, ability, executeFunction) {
@@ -119,16 +153,21 @@ define(['./Translations'], function (Translations) {
             dead : []
         };
 
-        moveResult.message = eval(executeFunction).call(null, active, defender, ability);
-        var defenderDeathExp = getOnDeathExperience(defender.vitals.state, defender.rewards.deathExperience);
-        assignMoveExperienceToHero(active, defenderDeathExp, ability.baseExp, ability.details.characterClass);
+        moveResult.message = eval(executeFunction).call(
+            null,
+            active,
+            defender,
+            ability,
+            getModifiers(active.vitals.type, null)
+        );
+        var defenderDeathExp = exports.getOnDeathExperience(defender.vitals.state, defender.rewards.deathExperience);
+        exports.assignMoveExperienceToHero(active, defenderDeathExp, ability.baseExp, ability.details.characterClass);
         moveResult[defender.vitals.state].push(defender.vitals.name);
 
         return moveResult;
     }
 
     
-
     function executeSplash (active, defenders, ability, executeFunction) {
 
         var moveResult = {
@@ -152,14 +191,14 @@ define(['./Translations'], function (Translations) {
                 active,
                 targetDefenders[index],
                 executionAbility,
-                {'splashIndex' : splashIndex}
+                getModifiers(active.vitals.type, splashIndex)
             ) + Translations.translate('format_break');
 
             moveResult[targetDefenders[index].vitals.state].push(targetDefenders[index].vitals.name);
-            defenderDeathExp += getOnDeathExperience(targetDefenders[index].vitals.state, targetDefenders[index].rewards.deathExperience);
+            defenderDeathExp += exports.getOnDeathExperience(targetDefenders[index].vitals.state, targetDefenders[index].rewards.deathExperience);
         }
 
-        assignMoveExperienceToHero(active, defenderDeathExp, executionAbility.baseExp, executionAbility.details.characterClass);
+        exports.assignMoveExperienceToHero(active, defenderDeathExp, executionAbility.baseExp, executionAbility.details.characterClass);
         return moveResult;
     }
 
@@ -180,14 +219,15 @@ define(['./Translations'], function (Translations) {
                 null,
                 active,
                 defenders[defender],
-                ability
+                ability,
+                getModifiers(active.vitals.type, null)
             ) + Translations.translate('format_break');
 
             moveResult[defenders[defender].vitals.state].push(defenders[defender].vitals.name);
-            defenderDeathExp += getOnDeathExperience(defenders[defender].vitals.state, defenders[defender].rewards.deathExperience);
+            defenderDeathExp += exports.getOnDeathExperience(defenders[defender].vitals.state, defenders[defender].rewards.deathExperience);
         }
 
-        assignMoveExperienceToHero(active, defenderDeathExp, ability.baseExp, ability.details.characterClass);
+        exports.assignMoveExperienceToHero(active, defenderDeathExp, ability.baseExp, ability.details.characterClass);
         return moveResult;
     }
 
@@ -230,6 +270,8 @@ define(['./Translations'], function (Translations) {
 
         return parseInt(Math.ceil(damage));
     };
+
+    
 
     exports.getDamageWithDefense = function(baseDamage, defense, defenderLevel) {
 

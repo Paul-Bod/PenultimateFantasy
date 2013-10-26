@@ -35,40 +35,24 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
         },
 
         bomb : {
+            name: 'bomb',
             selectionType : MoveSupport.selectionTypes['one'],
             dollarCost : 50,
             baseExp : 3,
             details : { characterClass : 'al',
                         type           : 'item',
                         element        : 'none' },
-
+            getBaseMultiplier: function(modifiers) {
+                var alchemistMultiplier = 2.8;
+                if (modifiers.activeType == this.details.characterClass) {
+                    return alchemistMultiplier;
+                }
+                return 1.0;
+            },
+            baseDamage: 350,
             execute :
                 function (user, target) {
-
-                    var baseDamage = 350,
-                        damage,
-                        logMess,
-                        alchemistMultiplier = 2.8;
-
-                    damage = MoveSupport.getDamageWithDefense(baseDamage, target.attributes.defense, target.training.level);
-
-                    if (user.vitals.type == this.details.characterClass) {
-                        damage *= alchemistMultiplier;
-                        damage = parseInt(Math.ceil(damage));
-                    }
-
-                    target.receive.damage(damage);
-                    logMess = Translations.translate('items_bomb_message', [user.vitals.name, target.vitals.name, damage]);
-
-                    MoveSupport.checkTotalMoveExperience(
-                        this.baseExp,
-                        this.details.characterClass,
-                        user,
-                        { state    : target.vitals.state,
-                          deathExp : MoveSupport.getDeathExperienceFromRewards(target.rewards) }
-                    );
-
-                    return logMess;
+                    return MoveSupport.executeOneOffensive(user, target, this);
                 }
         },
 
@@ -82,12 +66,19 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
 
             execute :
                 function(user, target) {
-                    var logMess = Translations.translate('items_lifeorb_message', [user.vitals.name, target.vitals.name]);
+                    var moveResult = {
+                        message : '',
+                        alive : [],
+                        dead : []
+                    };
+                    moveResult.message = Translations.translate('items_lifeorb_message', [user.vitals.name, target.vitals.name]);
 
                     target.receive.reviveInBattleWithPercentageOfHp(15);
 
-                    MoveSupport.checkTotalMoveExperience(this.baseExp, this.details.characterClass, user);
-                    return logMess;
+                    var defenderDeathExp = MoveSupport.getOnDeathExperience(target.vitals.state, target.rewards.deathExperience);
+                    MoveSupport.assignMoveExperienceToHero(user, defenderDeathExp, this.baseExp, this.details.characterClass);
+                    moveResult[target.vitals.state].push(target.vitals.name);
+                    return moveResult;
                 }
         },
 
@@ -104,16 +95,23 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
                     var mpIncrease = 50,
                         logMess,
                         alchemistMultiplier = 2;
+                    var moveResult = {
+                        message : '',
+                        alive : [],
+                        dead : []
+                    };
 
                     if (user.vitals.type == this.details.characterClass) {
                         mpIncrease *= alchemistMultiplier;
                     }
 
                     target.receive.mp(mpIncrease);
-                    logMess = Translations.translate('items_magicvial_message', [user.vitals.name, target.vitals.name, mpIncrease]);
+                    moveResult.message = Translations.translate('items_magicvial_message', [user.vitals.name, target.vitals.name, mpIncrease]);
 
-                    MoveSupport.checkTotalMoveExperience(this.baseExp, this.details.characterClass, user);
-                    return logMess;
+                    var defenderDeathExp = MoveSupport.getOnDeathExperience(target.vitals.state, target.rewards.deathExperience);
+                    MoveSupport.assignMoveExperienceToHero(user, defenderDeathExp, this.baseExp, this.details.characterClass);
+                    moveResult[target.vitals.state].push(target.vitals.name);
+                    return moveResult;
                 }
         }
     },

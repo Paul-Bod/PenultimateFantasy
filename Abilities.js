@@ -189,7 +189,6 @@ define(['./MoveSupport', './EventEmitter'], function (MoveSupport, Pubsub) {
                 },
             execute        :
                 function(active, defender) {
-
                     return MoveSupport.executeOneOffensive(active, defender, this);
                 }
         },
@@ -210,7 +209,6 @@ define(['./MoveSupport', './EventEmitter'], function (MoveSupport, Pubsub) {
                 },
             execute        :
                 function(active, defender) {
-
                     return MoveSupport.executeOneOffensive(active, defender, this);
                 }
         },
