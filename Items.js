@@ -18,19 +18,30 @@ define(['./MoveSupport', './Translations'], function (MoveSupport, Translations)
                         logMess,
                         action,
                         alchemistMultiplier = 2,
-                        resistance = MoveSupport.getResistanceToMove(this.details.element, target.resistances);
+                        resistance = MoveSupport.getResistanceToMove(this.details.element, target.resistances),
+                        moveResult = {
+                            message : '',
+                            alive : [],
+                            dead : []
+                        };
 
                     if (user.vitals.type == this.details.characterClass) {
                         hpIncrease *= alchemistMultiplier;
                     }
 
-                    action = MoveSupport.getActionFromResistance(resistance);
-                    target.receive[action](hpIncrease);
+                    if (resistance === 'weak') {
+                        target.receive.damage(hpIncrease);
+                    }
+                    else {
+                        target.receive.hp(hpIncrease);
+                    }
 
-                    logMess = Translations.translate('items_healthvile' + Translations.getResistanceKey(resistance) + '_message', [user.vitals.name, target.vitals.name, hpIncrease]);
+                    moveResult.message = Translations.translate('items_healthvile' + Translations.getResistanceKey(resistance) + '_message', [user.vitals.name, target.vitals.name, hpIncrease]);
 
-                    MoveSupport.checkTotalMoveExperience(this.baseExp, this.details.characterClass, user);
-                    return logMess;
+                    var defenderDeathExp = MoveSupport.getOnDeathExperience(target.vitals.state, target.rewards.deathExperience);
+                    MoveSupport.assignMoveExperienceToHero(user, defenderDeathExp, this.baseExp, this.details.characterClass);
+                    moveResult[target.vitals.state].push(target.vitals.name);
+                    return moveResult;
                 }
         },
 
