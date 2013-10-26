@@ -94,11 +94,21 @@ define(['./Translations'], function (Translations) {
         return logMess;
     }
 
-    function assignMoveExperienceToHero (active, baseExp, abilityCharacterClass) {
+    function assignMoveExperienceToHero (active, defenderDeathExp, baseExp, abilityCharacterClass) {
 
         if (active.vitals.baseType === 'hero') {
-            active.receive.collectedExp(exports.getMoveExperience(baseExp, abilityCharacterClass, active));
+            active.receive.collectedExp(exports.getMoveExperience(defenderDeathExp, baseExp, abilityCharacterClass, active));
         }
+    }
+
+    function getOnDeathExperience (defenderState, deathExperience) {
+        var exp = 0;
+
+        if (defenderState === 'dead') {
+            exp += deathExperience;
+        }
+
+        return exp;
     }
 
     function executeOne (active, defender, ability, executeFunction) {
@@ -109,8 +119,9 @@ define(['./Translations'], function (Translations) {
             dead : []
         };
 
-        assignMoveExperienceToHero(active, ability.baseExp, ability.details.characterClass);
         moveResult.message = eval(executeFunction).call(null, active, defender, ability);
+        var defenderDeathExp = getOnDeathExperience(defender.vitals.state, defender.rewards.deathExperience);
+        assignMoveExperienceToHero(active, defenderDeathExp, ability.baseExp, ability.details.characterClass);
         moveResult[defender.vitals.state].push(defender.vitals.name);
 
         return moveResult;
@@ -128,7 +139,8 @@ define(['./Translations'], function (Translations) {
             targetDefenders = defenders.target,
             executionAbility = ability,
             splashIndex,
-            offsetMultiplier;
+            offsetMultiplier,
+            defenderDeathExp = 0;
 
         for (var index in targetDefenders) {
 
@@ -144,9 +156,10 @@ define(['./Translations'], function (Translations) {
             ) + Translations.translate('format_break');
 
             moveResult[targetDefenders[index].vitals.state].push(targetDefenders[index].vitals.name);
+            defenderDeathExp += getOnDeathExperience(targetDefenders[index].vitals.state, targetDefenders[index].rewards.deathExperience);
         }
 
-        assignMoveExperienceToHero(active, executionAbility.baseExp, executionAbility.details.characterClass);
+        assignMoveExperienceToHero(active, defenderDeathExp, executionAbility.baseExp, executionAbility.details.characterClass);
         return moveResult;
     }
 
@@ -158,7 +171,8 @@ define(['./Translations'], function (Translations) {
             message : '',
             alive : [],
             dead : []
-        };
+        },
+        defenderDeathExp = 0;
 
         for (var defender in defenders) {
 
@@ -170,9 +184,10 @@ define(['./Translations'], function (Translations) {
             ) + Translations.translate('format_break');
 
             moveResult[defenders[defender].vitals.state].push(defenders[defender].vitals.name);
+            defenderDeathExp += getOnDeathExperience(defenders[defender].vitals.state, defenders[defender].rewards.deathExperience);
         }
 
-        assignMoveExperienceToHero(active, ability.baseExp, ability.details.characterClass);
+        assignMoveExperienceToHero(active, defenderDeathExp, ability.baseExp, ability.details.characterClass);
         return moveResult;
     }
 
@@ -239,18 +254,7 @@ define(['./Translations'], function (Translations) {
         return 'damage';
     };
 
-    exports.getOnDeathExperience = function (defenderState, deathExperience) {
-
-        var exp = 0;
-
-        if (defenderState === 'dead') {
-            exp += deathExperience;
-        }
-
-        return exp;
-    };
-
-    exports.getMoveExperience = function(moveExp, moveType, character) {
+    exports.getMoveExperience = function(defenderDeathExp, moveExp, moveType, character) {
 
         var exp = 0;
 
@@ -258,7 +262,7 @@ define(['./Translations'], function (Translations) {
             moveExp *= 3;
         }
         
-        exp += moveExp;
+        exp += moveExp + defenderDeathExp;
 
         return exp;
     }
