@@ -70,7 +70,7 @@ define(['./Translations'], function (Translations) {
                 break;
             case 'magic':
                 translationPrefix = 'abilities';
-                damage = exports.exports.getDamageWithDefenseAndAttack(
+                damage = exports.getDamageWithDefenseAndAttack(
                     active.attributes.magic,
                     active.training.level,
                     defender.attributes.magicdefense,
@@ -82,7 +82,7 @@ define(['./Translations'], function (Translations) {
                 break;
             default:
                 translationPrefix = 'abilities';
-                damage = exports.exports.getDamageWithDefenseAndAttack(
+                damage = exports.getDamageWithDefenseAndAttack(
                     active.attributes.strength,
                     active.training.level,
                     defender.attributes.defense,
