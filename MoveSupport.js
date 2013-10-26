@@ -34,13 +34,13 @@ define(['./Translations'], function (Translations) {
         return 1;
     }
 
-    function getDamageWithDefense(baseDamage, defense, defenderLevel, baseMultiplier, element, resistance) {
+    exports.getDamageWithDefense = function(baseDamage, defense, defenderLevel, baseMultiplier, element, resistance) {
         var damage = baseDamage / getDefenseFactor(defense, defenderLevel);
         damage *= baseMultiplier;
         damage *= getResistanceMultiplier(element, resistance);
         damage *= getRandomMultiplier();
         return parseInt(Math.ceil(damage));
-    }
+    };
 
     function executeOffensive (active, defender, ability, modifiers) {
         var resistance = exports.getResistanceToMove(ability.details.element, defender.resistances);
@@ -59,7 +59,7 @@ define(['./Translations'], function (Translations) {
         switch(ability.details.type) {
             case 'item':
                 translationPrefix = 'items';
-                damage = getDamageWithDefense(
+                damage = exports.getDamageWithDefense(
                     ability.baseDamage,
                     defender.attributes.defense,
                     defender.training.level,
@@ -70,7 +70,7 @@ define(['./Translations'], function (Translations) {
                 break;
             case 'magic':
                 translationPrefix = 'abilities';
-                damage = exports.getDamageWithDefenseAndAttack(
+                damage = exports.exports.getDamageWithDefenseAndAttack(
                     active.attributes.magic,
                     active.training.level,
                     defender.attributes.magicdefense,
@@ -82,7 +82,7 @@ define(['./Translations'], function (Translations) {
                 break;
             default:
                 translationPrefix = 'abilities';
-                damage = exports.getDamageWithDefenseAndAttack(
+                damage = exports.exports.getDamageWithDefenseAndAttack(
                     active.attributes.strength,
                     active.training.level,
                     defender.attributes.defense,
@@ -268,15 +268,6 @@ define(['./Translations'], function (Translations) {
         damage *= getResistanceMultiplier(element, resistance);
         damage *= getRandomMultiplier();
 
-        return parseInt(Math.ceil(damage));
-    };
-
-    
-
-    exports.getDamageWithDefense = function(baseDamage, defense, defenderLevel) {
-
-        var damage = baseDamage / getDefenseFactor(defense, defenderLevel);
-        damage *= getRandomMultiplier();
         return parseInt(Math.ceil(damage));
     };
 
