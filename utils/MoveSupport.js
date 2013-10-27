@@ -128,12 +128,10 @@ define(['./Translations'], function (Translations) {
     }
 
     exports.hpIncrease = function(active, target, ability, modifiers) {
-
         var resistance = exports.getResistanceToMove(ability.details.element, target.resistances),
             hpIncrease;
 
-        console.log("ability", ability);
-        hpIncrease = ability.hpIncrease * ability.getBaseMultiplier(modifiers);
+        hpIncrease = ability.baseHpIncrease * ability.getBaseMultiplier(modifiers);
         if (resistance === 'weak') {
             target.receive.damage(hpIncrease);
         }
@@ -142,7 +140,16 @@ define(['./Translations'], function (Translations) {
         }
 
         return getLogMessage(ability.name, ability.details.type, resistance, [active.vitals.name, target.vitals.name, hpIncrease]);
-    }
+    };
+
+    exports.mpIncrease = function (active, target, ability, modifiers) {
+        var resistance = exports.getResistanceToMove(ability.details.element, target.resistances),
+            mpIncrease;
+
+        mpIncrease = ability.baseMpIncrease * ability.getBaseMultiplier(modifiers);
+        target.receive.mp(mpIncrease);
+        return getLogMessage(ability.name, ability.details.type, resistance, [active.vitals.name, target.vitals.name, mpIncrease]);
+    };
 
     exports.revive = function(active, target, ability, modifiers) {
         var resistance = exports.getResistanceToMove(ability.details.element, target.resistances),
@@ -150,7 +157,7 @@ define(['./Translations'], function (Translations) {
 
         target.receive.reviveInBattleWithPercentageOfHp(reviveWithPercentage);
         return getLogMessage(ability.name, ability.details.type, resistance, [active.vitals.name, target.vitals.name]);
-    }
+    };
 
     exports.assignMoveExperienceToHero = function(active, defenderDeathExp, baseExp, abilityCharacterClass) {
 

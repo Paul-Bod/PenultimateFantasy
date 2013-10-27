@@ -19,7 +19,7 @@ define(['../utils/MoveSupport', '../utils/Translations'], function (MoveSupport,
                     }
                     return 1.0;
                 },
-            hpIncrease        : 100,
+            baseHpIncrease        : 100,
             execute           :
                 function (user, target) {
                     return MoveSupport.executeOne(MoveSupport.hpIncrease, user, target, this);
@@ -73,36 +73,25 @@ define(['../utils/MoveSupport', '../utils/Translations'], function (MoveSupport,
         },
 
         magicvial : {
-            name: 'magicvial',
-            selectionType : MoveSupport.selectionTypes['one'],
-            dollarCost : 50,
-            baseExp : 3,
-            details : { characterClass : 'al',
-                        type           : 'item',
-                        element        : 'none' },
-
-            execute :
-                function(user, target) {
-                    var mpIncrease = 50,
-                        logMess,
-                        alchemistMultiplier = 2;
-                    var moveResult = {
-                        message : '',
-                        alive : [],
-                        dead : []
-                    };
-
-                    if (user.vitals.type == this.details.characterClass) {
-                        mpIncrease *= alchemistMultiplier;
+            name              : 'magicvial',
+            selectionType     : MoveSupport.selectionTypes['one'],
+            dollarCost        : 50,
+            baseExp           : 3,
+            details           : { characterClass : 'al',
+                                  type           : 'item',
+                                  element        : 'none' },
+            getBaseMultiplier :
+                function(modifiers) {
+                    var alchemistMultiplier = 2;
+                    if (modifiers.activeType == this.details.characterClass) {
+                        return alchemistMultiplier;
                     }
-
-                    target.receive.mp(mpIncrease);
-                    moveResult.message = Translations.translate('items_magicvial_message', [user.vitals.name, target.vitals.name, mpIncrease]);
-
-                    var defenderDeathExp = MoveSupport.getOnDeathExperience(target.vitals.state, target.rewards.deathExperience);
-                    MoveSupport.assignMoveExperienceToHero(user, defenderDeathExp, this.baseExp, this.details.characterClass);
-                    moveResult[target.vitals.state].push(target.vitals.name);
-                    return moveResult;
+                    return 1.0;
+                },
+            baseMpIncrease    : 50,
+            execute           :
+                function(user, target) {
+                    return MoveSupport.executeOne(MoveSupport.mpIncrease, user, target, this);
                 }
         }
     },
