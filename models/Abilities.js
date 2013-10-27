@@ -53,27 +53,12 @@ define(['../utils/MoveSupport', '../lib/EventEmitter'], function (MoveSupport, P
                                element        : 'heal'},
             getBaseMultiplier :
                 function (modifiers) {
-
                     var baseMultiplier = 1.1;
                     return baseMultiplier * (1 + (modifiers.splashIndex * -0.1));
                 },
             execute        :
                 function (active, defenders) {
-
-                    var splashDefenders = {};
-
-                    for (var index in defenders.target) {
-
-                        if (defenders.target[index].vitals.name === defenders.focus) {
-                            splashDefenders.focusIndex = index;
-                            break;
-                        }
-                    }
-
-                    splashDefenders.target = defenders.target;
-                    splashDefenders.focus = defenders.focus;
-
-                    return MoveSupport.executeSplash(MoveSupport.healing, active, splashDefenders, this);
+                    return MoveSupport.executeSplash(MoveSupport.healing, active, defenders, this);
                 }
         },
 
@@ -108,27 +93,12 @@ define(['../utils/MoveSupport', '../lib/EventEmitter'], function (MoveSupport, P
                                element        : 'fire'},
             getBaseMultiplier :
                 function (modifiers) {
-
                     var baseMultiplier = 1.1;
                     return baseMultiplier * (1 + (modifiers.splashIndex * -0.1));
                 },
             execute        :
                 function (active, defenders) {
-
-                    var splashDefenders = {};
-
-                    for (var index in defenders.target) {
-
-                        if (defenders.target[index].vitals.name === defenders.focus) {
-                            splashDefenders.focusIndex = index;
-                            break;
-                        }
-                    }
-
-                    splashDefenders.target = defenders.target;
-                    splashDefenders.focus = defenders.focus;
-
-                    return MoveSupport.executeSplash(MoveSupport.offensive, active, splashDefenders, this);
+                    return MoveSupport.executeSplash(MoveSupport.offensive, active, defenders, this);
                 }
         },
 
@@ -220,27 +190,12 @@ define(['../utils/MoveSupport', '../lib/EventEmitter'], function (MoveSupport, P
                                element        : 'physical' },
             getBaseMultiplier :
                 function (modifiers) {
-
                     var baseMultiplier = 0.9;
                     return baseMultiplier * (1 + (modifiers.splashIndex * -0.1));
                 },
             execute        :
                 function (active, defenders) {
-
-                    var splashDefenders = {};
-
-                    for (var index in defenders.target) {
-
-                        if (defenders.target[index].vitals.name === defenders.focus) {
-                            splashDefenders.focusIndex = index;
-                            break;
-                        }
-                    }
-
-                    splashDefenders.target = defenders.target;
-                    splashDefenders.focus = defenders.focus;
-
-                    return MoveSupport.executeSplash(MoveSupport.offensive, active, splashDefenders, this);
+                    return MoveSupport.executeSplash(MoveSupport.offensive, active, defenders, this);
                 }
         },
 

@@ -215,14 +215,13 @@ define(['./Translations'], function (Translations) {
             },
             targetDefenders = defenders.target,
             executionAbility = ability,
+            focusIndex = targetDefenders.map(function (defender) {return defender.vitals.name}).indexOf(defenders.focus),
             splashIndex,
-            offsetMultiplier,
             defenderDeathExp = 0;
 
         for (var index in targetDefenders) {
-
-            offsetMultiplier = index < defenders.focusIndex ? -1 : 1;
-            splashIndex = (index - defenders.focusIndex) * offsetMultiplier;
+            splashIndex = Math.abs(index - focusIndex);
+            console.log(splashIndex);
 
             moveResult.message += executeFunction.call(
                 null,
@@ -237,6 +236,7 @@ define(['./Translations'], function (Translations) {
         }
 
         exports.assignMoveExperienceToHero(active, defenderDeathExp, executionAbility.baseExp, executionAbility.details.characterClass);
+        console.log(moveResult.message);
         return moveResult;
     }
 
