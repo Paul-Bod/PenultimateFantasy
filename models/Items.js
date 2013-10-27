@@ -10,38 +10,17 @@ define(['../utils/MoveSupport', '../utils/Translations'], function (MoveSupport,
             details : { characterClass : 'al',
                         type           : 'item',
                         element        : 'heal' },
-
+            getBaseMultiplier: function(modifiers) {
+                var alchemistMultiplier = 2;
+                if (modifiers.activeType == this.details.characterClass) {
+                    return alchemistMultiplier;
+                }
+                return 1.0;
+            },
+            hpIncrease: 100,
             execute :
                 function (user, target) {
-
-                    var hpIncrease = 100,
-                        logMess,
-                        action,
-                        alchemistMultiplier = 2,
-                        resistance = MoveSupport.getResistanceToMove(this.details.element, target.resistances),
-                        moveResult = {
-                            message : '',
-                            alive : [],
-                            dead : []
-                        };
-
-                    if (user.vitals.type == this.details.characterClass) {
-                        hpIncrease *= alchemistMultiplier;
-                    }
-
-                    if (resistance === 'weak') {
-                        target.receive.damage(hpIncrease);
-                    }
-                    else {
-                        target.receive.hp(hpIncrease);
-                    }
-
-                    moveResult.message = Translations.translate('items_healthvile' + Translations.getResistanceKey(resistance) + '_message', [user.vitals.name, target.vitals.name, hpIncrease]);
-
-                    var defenderDeathExp = MoveSupport.getOnDeathExperience(target.vitals.state, target.rewards.deathExperience);
-                    MoveSupport.assignMoveExperienceToHero(user, defenderDeathExp, this.baseExp, this.details.characterClass);
-                    moveResult[target.vitals.state].push(target.vitals.name);
-                    return moveResult;
+                    return MoveSupport.executeOne(MoveSupport.hpIncrease, user, target, this);
                 }
         },
 
@@ -63,7 +42,7 @@ define(['../utils/MoveSupport', '../utils/Translations'], function (MoveSupport,
             baseDamage: 350,
             execute :
                 function (user, target) {
-                    return MoveSupport.executeOneOffensive(user, target, this);
+                    return MoveSupport.executeOne(MoveSupport.offensive, user, target, this);
                 }
         },
 

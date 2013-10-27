@@ -15,13 +15,11 @@ define(['../utils/MoveSupport', '../lib/EventEmitter'], function (MoveSupport, P
                                element        : 'heal' },
             getBaseMultiplier :
                 function () {
-
                     return 1.2;
                 },
             execute        :
                 function (active, target) {
-
-                    return MoveSupport.executeOneHealing(active, target, this);
+                    return MoveSupport.executeOne(MoveSupport.healing, active, target, this);
                 }
         },
 
@@ -40,7 +38,7 @@ define(['../utils/MoveSupport', '../lib/EventEmitter'], function (MoveSupport, P
                 },
             execute          : 
                 function (active, target) {
-                    return MoveSupport.executeManyHealing(active, target, this);
+                    return MoveSupport.executeMany(MoveSupport.healing, active, target, this);
                 }
         },
 
@@ -75,7 +73,7 @@ define(['../utils/MoveSupport', '../lib/EventEmitter'], function (MoveSupport, P
                     splashDefenders.target = defenders.target;
                     splashDefenders.focus = defenders.focus;
 
-                    return MoveSupport.executeSplashHealing(active, splashDefenders, this);
+                    return MoveSupport.executeSplash(MoveSupport.healing, active, splashDefenders, this);
                 }
         },
 
@@ -95,8 +93,7 @@ define(['../utils/MoveSupport', '../lib/EventEmitter'], function (MoveSupport, P
                 },
             execute        :
                 function (active, defender) {
-
-                    return MoveSupport.executeOneOffensive(active, defender, this);
+                    return MoveSupport.executeOne(MoveSupport.offensive, active, defender, this);
                 }
         },
 
@@ -131,7 +128,7 @@ define(['../utils/MoveSupport', '../lib/EventEmitter'], function (MoveSupport, P
                     splashDefenders.target = defenders.target;
                     splashDefenders.focus = defenders.focus;
 
-                    return MoveSupport.executeSplashOffensive(active, splashDefenders, this);
+                    return MoveSupport.executeSplash(MoveSupport.offensive, active, splashDefenders, this);
                 }
         },
 
@@ -150,8 +147,7 @@ define(['../utils/MoveSupport', '../lib/EventEmitter'], function (MoveSupport, P
                 },
             execute        :
                 function (active, defender) {
-
-                    return MoveSupport.executeOneOffensive(active, defender, this);
+                    return MoveSupport.executeOne(MoveSupport.offensive, active, defender, this);
                 }
         },
 
@@ -170,7 +166,7 @@ define(['../utils/MoveSupport', '../lib/EventEmitter'], function (MoveSupport, P
                 },
             execute        :
                 function (active, defenders) {
-                    return MoveSupport.executeManyOffensive(active, defenders, this);
+                    return MoveSupport.executeMany(MoveSupport.offensive, active, defenders, this);
                 }
         },
 
@@ -189,7 +185,7 @@ define(['../utils/MoveSupport', '../lib/EventEmitter'], function (MoveSupport, P
                 },
             execute        :
                 function(active, defender) {
-                    return MoveSupport.executeOneOffensive(active, defender, this);
+                    return MoveSupport.executeOne(MoveSupport.offensive, active, defender, this);
                 }
         },
 
@@ -209,7 +205,7 @@ define(['../utils/MoveSupport', '../lib/EventEmitter'], function (MoveSupport, P
                 },
             execute        :
                 function(active, defender) {
-                    return MoveSupport.executeOneOffensive(active, defender, this);
+                    return MoveSupport.executeOne(MoveSupport.offensive, active, defender, this);
                 }
         },
 
@@ -244,7 +240,7 @@ define(['../utils/MoveSupport', '../lib/EventEmitter'], function (MoveSupport, P
                     splashDefenders.target = defenders.target;
                     splashDefenders.focus = defenders.focus;
 
-                    return MoveSupport.executeSplashOffensive(active, splashDefenders, this);
+                    return MoveSupport.executeSplash(MoveSupport.offensive, active, splashDefenders, this);
                 }
         },
 

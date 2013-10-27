@@ -42,7 +42,7 @@ define(['./Translations'], function (Translations) {
         return parseInt(Math.ceil(damage));
     };
 
-    function executeOffensive (active, defender, ability, modifiers) {
+    exports.offensive = function(active, defender, ability, modifiers) {
         var resistance = exports.getResistanceToMove(ability.details.element, defender.resistances);
 
         if (resistance === 'immune') {
@@ -102,7 +102,7 @@ define(['./Translations'], function (Translations) {
         return logMess;
     }
 
-    function executeHealing (active, target, spell, modifiers) {
+    exports.healing = function(active, target, spell, modifiers) {
 
         var resistance = exports.getResistanceToMove(spell.details.element, target.resistances),
             hpIncrease,
@@ -117,6 +117,33 @@ define(['./Translations'], function (Translations) {
         }
 
         logMess = Translations.translate('abilities_' + spell.name + Translations.getResistanceKey(resistance) + '_message', [active.vitals.name, target.vitals.name, hpIncrease]);
+
+        return logMess;
+    }
+
+    exports.hpIncrease = function(active, target, ability, modifiers) {
+
+        var resistance = exports.getResistanceToMove(spell.details.element, target.resistances),
+            hpIncrease,
+            logMess,
+            translationPrefix;
+
+        hpIncrease = ability.hpIncrease * ability.getBaseMultipler(modifiers);
+        if (resistance === 'weak') {
+            target.receive.damage(hpIncrease);
+        }
+        else {
+            target.receive.hp(hpIncrease);
+        }
+
+        if (ability.details.type === 'item') {
+            translationPrefix = 'items';
+        }
+        else {
+            translationPrefix = 'abilities';
+        }
+
+        logMess = Translations.translate(translationPrefix + '_' + spell.name + Translations.getResistanceKey(resistance) + '_message', [active.vitals.name, target.vitals.name, hpIncrease]);
 
         return logMess;
     }
@@ -145,7 +172,7 @@ define(['./Translations'], function (Translations) {
         };
     }
 
-    function executeOne (active, defender, ability, executeFunction) {
+    exports.executeOne = function(executeFunction, active, defender, ability) {
 
         var moveResult = {
             message : '',
@@ -153,7 +180,7 @@ define(['./Translations'], function (Translations) {
             dead : []
         };
 
-        moveResult.message = eval(executeFunction).call(
+        moveResult.message = executeFunction.call(
             null,
             active,
             defender,
@@ -168,7 +195,7 @@ define(['./Translations'], function (Translations) {
     }
 
     
-    function executeSplash (active, defenders, ability, executeFunction) {
+    exports.executeSplash = function(executeFunction, active, defenders, ability) {
 
         var moveResult = {
                 message : '',
@@ -186,7 +213,7 @@ define(['./Translations'], function (Translations) {
             offsetMultiplier = index < defenders.focusIndex ? -1 : 1;
             splashIndex = (index - defenders.focusIndex) * offsetMultiplier;
 
-            moveResult.message += eval(executeFunction).call(
+            moveResult.message += executeFunction.call(
                 null,
                 active,
                 targetDefenders[index],
@@ -204,7 +231,7 @@ define(['./Translations'], function (Translations) {
 
     
 
-    function executeMany (active, defenders, ability, executeFunction) {
+    exports.executeMany = function(executeFunction, active, defenders, ability) {
 
         var moveResult = {
             message : '',
@@ -215,7 +242,7 @@ define(['./Translations'], function (Translations) {
 
         for (var defender in defenders) {
 
-            moveResult.message += eval(executeFunction).call(
+            moveResult.message += executeFunction.call(
                 null,
                 active,
                 defenders[defender],
@@ -230,36 +257,6 @@ define(['./Translations'], function (Translations) {
         exports.assignMoveExperienceToHero(active, defenderDeathExp, ability.baseExp, ability.details.characterClass);
         return moveResult;
     }
-
-    exports.executeOneOffensive = function (active, defender, ability) {
-
-        return executeOne(active, defender, ability, 'executeOffensive'); 
-    };
-
-    exports.executeOneHealing = function (active, defender, ability) {
-
-        return executeOne(active, defender, ability, 'executeHealing');
-    };
-
-    exports.executeManyOffensive = function (active, defenders, ability) {
-
-        return executeMany(active, defenders, ability, 'executeOffensive');
-    };
-
-    exports.executeManyHealing = function (active, defenders, ability) {
-
-        return executeMany(active, defenders, ability, 'executeHealing');
-    };
-
-    exports.executeSplashOffensive = function (active, defenders, ability) {
-
-        return executeSplash(active, defenders, ability, 'executeOffensive');
-    };
-
-    exports.executeSplashHealing = function (active, defenders, ability) {
-
-        return executeSplash(active, defenders, ability, 'executeHealing');
-    };
 
     exports.getDamageWithDefenseAndAttack = function(attackPower, attackerLevel, defense, defenderLevel, baseMultiplier, element, resistance) {
 
