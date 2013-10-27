@@ -42,6 +42,22 @@ define(['./Translations'], function (Translations) {
         return parseInt(Math.ceil(damage));
     };
 
+    function getLogMessage(abilityName, abilityType, resistance, activeName, defenderName, unit) {
+        var translationPrefix;
+
+        if (abilityType === 'item') {
+            translationPrefix = 'items';
+        }
+        else {
+            translationPrefix = 'abilities';
+        }
+
+        return Translations.translate(
+            translationPrefix + '_' + abilityName + Translations.getResistanceKey(resistance) + '_message',
+            [activeName, defenderName, unit]
+        );
+    }
+
     exports.offensive = function(active, defender, ability, modifiers) {
         var resistance = exports.getResistanceToMove(ability.details.element, defender.resistances);
 
@@ -53,12 +69,10 @@ define(['./Translations'], function (Translations) {
             damage,
             attack,
             defense,
-            logMess,
-            translationPrefix;
+            logMess;
 
         switch(ability.details.type) {
             case 'item':
-                translationPrefix = 'items';
                 damage = exports.getDamageWithDefense(
                     ability.baseDamage,
                     defender.attributes.defense,
@@ -69,7 +83,6 @@ define(['./Translations'], function (Translations) {
                 );
                 break;
             case 'magic':
-                translationPrefix = 'abilities';
                 damage = exports.getDamageWithDefenseAndAttack(
                     active.attributes.magic,
                     active.training.level,
@@ -81,7 +94,6 @@ define(['./Translations'], function (Translations) {
                 );
                 break;
             default:
-                translationPrefix = 'abilities';
                 damage = exports.getDamageWithDefenseAndAttack(
                     active.attributes.strength,
                     active.training.level,
@@ -97,18 +109,16 @@ define(['./Translations'], function (Translations) {
         action = exports.getActionFromResistance(resistance);
         defender.receive[action](damage);
 
-        logMess = Translations.translate(translationPrefix + '_' + ability.name + Translations.getResistanceKey(resistance) + '_message', [active.vitals.name, defender.vitals.name, damage]);
-
-        return logMess;
+        return getLogMessage(ability.name, ability.details.type, resistance, active.vitals.name, defender.vitals.name, damage);
     }
 
-    exports.healing = function(active, target, spell, modifiers) {
+    exports.healing = function(active, target, ability, modifiers) {
 
-        var resistance = exports.getResistanceToMove(spell.details.element, target.resistances),
+        var resistance = exports.getResistanceToMove(ability.details.element, target.resistances),
             hpIncrease,
             logMess;
 
-        hpIncrease = exports.getHealing(active.attributes.magic, active.training.level, spell.getBaseMultiplier(modifiers));
+        hpIncrease = exports.getHealing(active.attributes.magic, active.training.level, ability.getBaseMultiplier(modifiers));
         if (resistance === 'weak') {
             target.receive.damage(hpIncrease);
         }
@@ -116,19 +126,18 @@ define(['./Translations'], function (Translations) {
             target.receive.hp(hpIncrease);
         }
 
-        logMess = Translations.translate('abilities_' + spell.name + Translations.getResistanceKey(resistance) + '_message', [active.vitals.name, target.vitals.name, hpIncrease]);
-
-        return logMess;
+        return getLogMessage(ability.name, ability.details.type, resistance, active.vitals.name, target.vitals.name, hpIncrease);
     }
 
     exports.hpIncrease = function(active, target, ability, modifiers) {
 
-        var resistance = exports.getResistanceToMove(spell.details.element, target.resistances),
+        var resistance = exports.getResistanceToMove(ability.details.element, target.resistances),
             hpIncrease,
             logMess,
             translationPrefix;
 
-        hpIncrease = ability.hpIncrease * ability.getBaseMultipler(modifiers);
+        console.log("ability", ability);
+        hpIncrease = ability.hpIncrease * ability.getBaseMultiplier(modifiers);
         if (resistance === 'weak') {
             target.receive.damage(hpIncrease);
         }
@@ -136,16 +145,7 @@ define(['./Translations'], function (Translations) {
             target.receive.hp(hpIncrease);
         }
 
-        if (ability.details.type === 'item') {
-            translationPrefix = 'items';
-        }
-        else {
-            translationPrefix = 'abilities';
-        }
-
-        logMess = Translations.translate(translationPrefix + '_' + spell.name + Translations.getResistanceKey(resistance) + '_message', [active.vitals.name, target.vitals.name, hpIncrease]);
-
-        return logMess;
+        return getLogMessage(ability.name, ability.details.type, resistance, active.vitals.name, target.vitals.name, hpIncrease);
     }
 
     exports.assignMoveExperienceToHero = function(active, defenderDeathExp, baseExp, abilityCharacterClass) {

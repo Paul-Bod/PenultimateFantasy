@@ -74,11 +74,13 @@ define(function () {
         battlesummary_experiencetotal  : '{0} has {1} experience points !',
         battlesummary_continue         : 'Continue',
 
-        items_healthvile_message      : '{0} used a Health Vial on {1} restoring {2} health !',
-        items_healthvile_weak_message : '{0} used a Health Vial on {1} doing {2} damage ! {1} is weak against healing items !',
+        items_healthvial_message      : '{0} used a Health Vial on {1} restoring {2} health !',
+        items_healthvial_weak_message : '{0} used a Health Vial on {1} doing {2} damage ! {1} is weak against healing items !',
 
         items_bomb_message       : '{0} used a Bomb on {1} doing {2} damage !',
+
         items_lifeorb_message    : '{0} used a Life Orb on {1} !',
+
         items_magicvial_message  : '{0} used a Magic Vial on {1} restoring {2} magic !',
 
         abilities_attack_message        : '{0} attacked {1} doing {2} physical damage !',

@@ -4,6 +4,7 @@ define(['../utils/MoveSupport', '../utils/Translations'], function (MoveSupport,
 
     items = {
         healthvial : {
+            name: 'healthvial',
             selectionType : MoveSupport.selectionTypes['one'],
             dollarCost : 100,
             baseExp : 3,
@@ -47,6 +48,7 @@ define(['../utils/MoveSupport', '../utils/Translations'], function (MoveSupport,
         },
 
         lifeorb : {
+            name: 'lifeorb',
             selectionType : MoveSupport.selectionTypes['one'],
             dollarCost : 150,
             baseExp : 3,
@@ -73,6 +75,7 @@ define(['../utils/MoveSupport', '../utils/Translations'], function (MoveSupport,
         },
 
         magicvial : {
+            name: 'magicvial',
             selectionType : MoveSupport.selectionTypes['one'],
             dollarCost : 50,
             baseExp : 3,
