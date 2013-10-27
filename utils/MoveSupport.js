@@ -42,7 +42,7 @@ define(['./Translations'], function (Translations) {
         return parseInt(Math.ceil(damage));
     };
 
-    function getLogMessage(abilityName, abilityType, resistance, activeName, defenderName, unit) {
+    function getLogMessage(abilityName, abilityType, resistance, translationValues) {
         var translationPrefix;
 
         if (abilityType === 'item') {
@@ -54,7 +54,7 @@ define(['./Translations'], function (Translations) {
 
         return Translations.translate(
             translationPrefix + '_' + abilityName + Translations.getResistanceKey(resistance) + '_message',
-            [activeName, defenderName, unit]
+            translationValues
         );
     }
 
@@ -62,14 +62,13 @@ define(['./Translations'], function (Translations) {
         var resistance = exports.getResistanceToMove(ability.details.element, defender.resistances);
 
         if (resistance === 'immune') {
-            return logMess = Translations.translate('abilities_' + ability.name + Translations.getResistanceKey(resistance) + '_message', [active.vitals.name, defender.vitals.name]);
+            return Translations.translate('abilities_' + ability.name + Translations.getResistanceKey(resistance) + '_message', [active.vitals.name, defender.vitals.name]);
         }
         
         var action,
             damage,
             attack,
-            defense,
-            logMess;
+            defense;
 
         switch(ability.details.type) {
             case 'item':
@@ -109,14 +108,13 @@ define(['./Translations'], function (Translations) {
         action = exports.getActionFromResistance(resistance);
         defender.receive[action](damage);
 
-        return getLogMessage(ability.name, ability.details.type, resistance, active.vitals.name, defender.vitals.name, damage);
+        return getLogMessage(ability.name, ability.details.type, resistance, [active.vitals.name, defender.vitals.name, damage]);
     }
 
     exports.healing = function(active, target, ability, modifiers) {
 
         var resistance = exports.getResistanceToMove(ability.details.element, target.resistances),
-            hpIncrease,
-            logMess;
+            hpIncrease;
 
         hpIncrease = exports.getHealing(active.attributes.magic, active.training.level, ability.getBaseMultiplier(modifiers));
         if (resistance === 'weak') {
@@ -126,15 +124,13 @@ define(['./Translations'], function (Translations) {
             target.receive.hp(hpIncrease);
         }
 
-        return getLogMessage(ability.name, ability.details.type, resistance, active.vitals.name, target.vitals.name, hpIncrease);
+        return getLogMessage(ability.name, ability.details.type, resistance, [active.vitals.name, target.vitals.name, hpIncrease]);
     }
 
     exports.hpIncrease = function(active, target, ability, modifiers) {
 
         var resistance = exports.getResistanceToMove(ability.details.element, target.resistances),
-            hpIncrease,
-            logMess,
-            translationPrefix;
+            hpIncrease;
 
         console.log("ability", ability);
         hpIncrease = ability.hpIncrease * ability.getBaseMultiplier(modifiers);
@@ -145,7 +141,15 @@ define(['./Translations'], function (Translations) {
             target.receive.hp(hpIncrease);
         }
 
-        return getLogMessage(ability.name, ability.details.type, resistance, active.vitals.name, target.vitals.name, hpIncrease);
+        return getLogMessage(ability.name, ability.details.type, resistance, [active.vitals.name, target.vitals.name, hpIncrease]);
+    }
+
+    exports.revive = function(active, target, ability, modifiers) {
+        var resistance = exports.getResistanceToMove(ability.details.element, target.resistances),
+            reviveWithPercentage = ability.basePercentage * ability.getBaseMultiplier(modifiers);
+
+        target.receive.reviveInBattleWithPercentageOfHp(reviveWithPercentage);
+        return getLogMessage(ability.name, ability.details.type, resistance, [active.vitals.name, target.vitals.name]);
     }
 
     exports.assignMoveExperienceToHero = function(active, defenderDeathExp, baseExp, abilityCharacterClass) {

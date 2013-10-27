@@ -4,73 +4,71 @@ define(['../utils/MoveSupport', '../utils/Translations'], function (MoveSupport,
 
     items = {
         healthvial : {
-            name: 'healthvial',
-            selectionType : MoveSupport.selectionTypes['one'],
-            dollarCost : 100,
-            baseExp : 3,
-            details : { characterClass : 'al',
-                        type           : 'item',
-                        element        : 'heal' },
-            getBaseMultiplier: function(modifiers) {
-                var alchemistMultiplier = 2;
-                if (modifiers.activeType == this.details.characterClass) {
-                    return alchemistMultiplier;
-                }
-                return 1.0;
-            },
-            hpIncrease: 100,
-            execute :
+            name              : 'healthvial',
+            selectionType     : MoveSupport.selectionTypes['one'],
+            dollarCost        : 100,
+            baseExp           : 3,
+            details           : { characterClass : 'al',
+                                  type           : 'item',
+                                  element        : 'heal' },
+            getBaseMultiplier :
+                function(modifiers) {
+                    var alchemistMultiplier = 2;
+                    if (modifiers.activeType == this.details.characterClass) {
+                        return alchemistMultiplier;
+                    }
+                    return 1.0;
+                },
+            hpIncrease        : 100,
+            execute           :
                 function (user, target) {
                     return MoveSupport.executeOne(MoveSupport.hpIncrease, user, target, this);
                 }
         },
 
         bomb : {
-            name: 'bomb',
-            selectionType : MoveSupport.selectionTypes['one'],
-            dollarCost : 50,
-            baseExp : 3,
-            details : { characterClass : 'al',
-                        type           : 'item',
-                        element        : 'none' },
-            getBaseMultiplier: function(modifiers) {
-                var alchemistMultiplier = 2.8;
-                if (modifiers.activeType == this.details.characterClass) {
-                    return alchemistMultiplier;
-                }
-                return 1.0;
-            },
-            baseDamage: 350,
-            execute :
+            name              : 'bomb',
+            selectionType     : MoveSupport.selectionTypes['one'],
+            dollarCost        : 50,
+            baseExp           : 3,
+            details           : { characterClass : 'al',
+                                  type           : 'item',
+                                  element        : 'none' },
+            getBaseMultiplier :
+                function(modifiers) {
+                    var alchemistMultiplier = 2.8;
+                    if (modifiers.activeType == this.details.characterClass) {
+                        return alchemistMultiplier;
+                    }
+                    return 1.0;
+                },
+            baseDamage        : 350,
+            execute           :
                 function (user, target) {
                     return MoveSupport.executeOne(MoveSupport.offensive, user, target, this);
                 }
         },
 
         lifeorb : {
-            name: 'lifeorb',
-            selectionType : MoveSupport.selectionTypes['one'],
-            dollarCost : 150,
-            baseExp : 3,
-            details : { characterClass : 'al',
-                        type           : 'item',
-                        element        : 'none' },
-
-            execute :
+            name              : 'lifeorb',
+            selectionType     : MoveSupport.selectionTypes['one'],
+            dollarCost        : 150,
+            baseExp           : 3,
+            details           : { characterClass : 'al',
+                                  type           : 'item',
+                                  element        : 'none' },
+            getBaseMultiplier :
+                function(modifiers) {
+                    var alchemistMultiplier = 3.3;
+                    if (modifiers.activeType == this.details.characterClass) {
+                        return alchemistMultiplier;
+                    }
+                    return 1.0;
+                },
+            basePercentage    : 15,
+            execute           :
                 function(user, target) {
-                    var moveResult = {
-                        message : '',
-                        alive : [],
-                        dead : []
-                    };
-                    moveResult.message = Translations.translate('items_lifeorb_message', [user.vitals.name, target.vitals.name]);
-
-                    target.receive.reviveInBattleWithPercentageOfHp(15);
-
-                    var defenderDeathExp = MoveSupport.getOnDeathExperience(target.vitals.state, target.rewards.deathExperience);
-                    MoveSupport.assignMoveExperienceToHero(user, defenderDeathExp, this.baseExp, this.details.characterClass);
-                    moveResult[target.vitals.state].push(target.vitals.name);
-                    return moveResult;
+                    return MoveSupport.executeOne(MoveSupport.revive, user, target, this);
                 }
         },
 
