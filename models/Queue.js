@@ -1,22 +1,20 @@
 define(['../lib/EventEmitter'], function (Pubsub) {
 
     var queue = [],
+        activePos,
         processing = false;
 
     function processNextItem () {
-
         processing = true;
-
-        var nextCharacter = queue.splice(0, 1);
-
-        Pubsub.emitEvent('queue:ready', nextCharacter);
+        var nextCharacter = queue[0];
+        activePos = 0;
+        Pubsub.emitEvent('queue:ready', [nextCharacter]);
 
     }
 
     function handleGaugeUpdate (gaugeData) {
 
         if (gaugeData.readyState) {
-
             queue.push(gaugeData.character);
 
             if (!processing) {
@@ -25,10 +23,38 @@ define(['../lib/EventEmitter'], function (Pubsub) {
         }
     }
 
+    function handleMoveSkip() {
+        var nextCharacter = queue[activePos],
+            queueLength = queue.length;
+
+        for (index in queue) {
+            if (queue[index].vitals.baseType === 'hero' && index > activePos) {
+                nextCharacter = queue[index];
+                activePos = index;
+                break;
+            }
+
+            if (index == queueLength-1) {
+                nextCharacter = queue[0];
+                activePos = 0;
+            }
+        }
+
+        Pubsub.emitEvent('queue:ready', [nextCharacter]);
+    }
+
     function handleMoveEnd () {
+        if (activePos > 0) {
+            var startedFrom = queue.splice(0, 1)[0];
+            queue.splice(activePos, 0, startedFrom);
+            if (activePos > 1) {
+                var skippedTo = queue.splice(activePos-1, 1)[0];
+                queue.unshift(skippedTo);
+            }
+        }
 
-        if (queue.length > 0) {
-
+        queue.splice(0, 1);
+        if (queue.length > 0 && processing === true) {
             processNextItem();
         }
         else {
@@ -37,9 +63,7 @@ define(['../lib/EventEmitter'], function (Pubsub) {
     }
 
     function indexOfCharacter (characterList, name) {
-
         for (var index in characterList) {
-
             if (characterList[index].vitals.name === name) {
                 return index;
             }
@@ -47,18 +71,16 @@ define(['../lib/EventEmitter'], function (Pubsub) {
     }
 
     function removeKilledCharacter (character) {
-
         var queueTargetIndex = indexOfCharacter(queue, character);
-
         if (queueTargetIndex >= 0) {
-
             queue.splice(queueTargetIndex, 1);
         }
     }
 
     function resetQueue () {
-
+        console.log("RESETTING QUEUE");
         queue = [];
+        activePos = 0;
         processing = false;
     }
 
@@ -66,5 +88,5 @@ define(['../lib/EventEmitter'], function (Pubsub) {
     Pubsub.addListener('controller:move:end', handleMoveEnd);
     Pubsub.addListener('controller:character:killed', removeKilledCharacter);
     Pubsub.addListener('controller:battle:end', resetQueue);
-    Pubsub.addListener('abilities:skip', function () {console.log('skipping!');});
+    Pubsub.addListener('abilities:skip', handleMoveSkip);
 });

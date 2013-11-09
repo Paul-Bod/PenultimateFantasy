@@ -174,7 +174,7 @@ define(['./Translations'], function (Translations) {
         }
 
         return exp;
-    }
+    };
 
     function getModifiers(activeType, splashIndex) {
         return {
@@ -183,13 +183,19 @@ define(['./Translations'], function (Translations) {
         };
     }
 
-    exports.executeOne = function(executeFunction, active, defender, ability) {
-
-        var moveResult = {
+    exports.initialiseMoveResult  = function() {
+        return {
             message : '',
             alive : [],
-            dead : []
+            dead : [],
+            postMove : [],
+            endMove : true
         };
+    };
+
+    exports.executeOne = function(executeFunction, active, defender, ability) {
+
+        var moveResult = exports.initialiseMoveResult();
 
         moveResult.message = executeFunction.call(
             null,
@@ -203,16 +209,12 @@ define(['./Translations'], function (Translations) {
         moveResult[defender.vitals.state].push(defender.vitals.name);
 
         return moveResult;
-    }
+    };
 
     
     exports.executeSplash = function(executeFunction, active, defenders, ability) {
 
-        var moveResult = {
-                message : '',
-                alive : [],
-                dead : []
-            },
+        var moveResult = exports.initialiseMoveResult(),
             targetDefenders = defenders.target,
             executionAbility = ability,
             focusIndex = targetDefenders.map(function (defender) {return defender.vitals.name}).indexOf(defenders.focus),
@@ -221,7 +223,6 @@ define(['./Translations'], function (Translations) {
 
         for (var index in targetDefenders) {
             splashIndex = Math.abs(index - focusIndex);
-            console.log(splashIndex);
 
             moveResult.message += executeFunction.call(
                 null,
@@ -236,7 +237,6 @@ define(['./Translations'], function (Translations) {
         }
 
         exports.assignMoveExperienceToHero(active, defenderDeathExp, executionAbility.baseExp, executionAbility.details.characterClass);
-        console.log(moveResult.message);
         return moveResult;
     }
 
@@ -244,12 +244,8 @@ define(['./Translations'], function (Translations) {
 
     exports.executeMany = function(executeFunction, active, defenders, ability) {
 
-        var moveResult = {
-            message : '',
-            alive : [],
-            dead : []
-        },
-        defenderDeathExp = 0;
+        var moveResult = exports.initialiseMoveResult(),
+            defenderDeathExp = 0;
 
         for (var defender in defenders) {
 

@@ -210,9 +210,13 @@ define(['../utils/MoveSupport', '../lib/EventEmitter'], function (MoveSupport, P
                                type           : 'neutral',
                                element        : 'none' },
             execute        :
-                function () {
-
-                    Pubsub.emitEvent('abilities:skip');
+                function (active) {
+                    var moveResult = MoveSupport.initialiseMoveResult();
+                    moveResult.endMove = false;
+                    moveResult.postMove.push(function () {
+                        Pubsub.emitEvent('abilities:skip')
+                    });
+                    return moveResult;
                 }
         }
     };
@@ -287,9 +291,9 @@ define(['../utils/MoveSupport', '../lib/EventEmitter'], function (MoveSupport, P
         return abilities[ability].execute(active, target, ability);
     };
 
-    exports.executeNeutralAbility = function (ability) {
+    exports.executeNeutralAbility = function (ability, active) {
 
-        return abilities[ability].execute();
+        return abilities[ability].execute(active);
     };
 
     exports.getAbilities = function () {

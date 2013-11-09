@@ -46,12 +46,21 @@ define([
     function moveEnd(result) {
 
         view.renderLog(result.message);
-        updateLists(result);
 
         // update all characters as hero may have used mp
         view.renderEnemies(enemies);
         view.renderHeroes(heroes);
         view.clearBattleMenu();
+
+        result.postMove.forEach(function (element, index, array) {
+            element();
+        });
+
+        if (result.endMove === false) {
+            return true;
+        }
+
+        updateLists(result);
 
         setTimeout(function() {
 
@@ -283,7 +292,7 @@ define([
         var result = {};
 
         if (type === 'neutral') {
-            Abilities.executeNeutralAbility(name);
+            result = Abilities.executeNeutralAbility(name, active);
         }
         else {
             if (type === 'item') {
@@ -341,6 +350,9 @@ define([
             function handleResult (defender) {
                 var result = executeMove(abilityType, abilityName, defender, false);
                 Pubsub.removeEvent('battlemenu:action');
+                Pubsub.removeEvent('battlemenu:forward');
+                Pubsub.removeEvent('battlemenu:backward');
+                Pubsub.removeEvent('battlemenu:cancel');
 
                 // hero go end point
                 var thisInstance = this;
