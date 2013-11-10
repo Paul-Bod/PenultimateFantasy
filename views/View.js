@@ -350,25 +350,11 @@ define(['../utils/Translations'], function (Translations) {
             });
 
             $('#pf').append(backButton);
-        },
+        };
 
-        renderCancelButton = function() {
-            var abilitiesList = $('#abilities'),
-                cancelButton,
-                _this = this,
-                menuItems = battleMenus[battleMenuCounter],
-                topMenu = superActions[saCounter],
-                callRenderAbilities = exports.renderAbilities;
-
-            abilitiesList.empty();
-            cancelButton = $('<button>');
-            cancelButton.attr('type', 'button');
-            cancelButton.html('cancel');
-            cancelButton.attr('id', 'cancelbutton');
-
-            cancelButton.click(function() {callRenderAbilities.call(_this, menuItems, topMenu, true)});
-
-            abilitiesList.append(cancelButton);
+        exports.removeSelectTarget = function() {
+            $("#enemies").children().each(function () {$(this).unbind('click')});
+            $("#heroes").children().each(function () {$(this).unbind('click')});
         };
 
         exports.renderSelectTarget = function(onTargetClick) {

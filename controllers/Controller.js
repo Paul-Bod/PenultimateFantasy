@@ -326,7 +326,11 @@ define([
 
         Pubsub.addListener('battlemenu:forward', renderBattleMenu);
         Pubsub.addListener('battlemenu:backward', renderBattleMenu);
-        Pubsub.addListener('battlemenu:cancel', renderBattleMenu);
+        Pubsub.addListener('battlemenu:cancel', function (menu) {
+            view.removeSelectTarget();
+            Pubsub.removeEvent('targetselection:selected');
+            renderBattleMenu(menu);
+        });
         Pubsub.addListener('battlemenu:action', function (characterName, abilityType, abilityName, selectionType) {
 
             var targetSelector = TargetSelection.getTargetSelector(selectionType, {

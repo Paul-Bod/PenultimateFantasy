@@ -211,9 +211,7 @@ define(['./Translations'], function (Translations) {
         return moveResult;
     };
 
-    
     exports.executeSplash = function(executeFunction, active, defenders, ability) {
-
         var moveResult = exports.initialiseMoveResult(),
             targetDefenders = defenders.target,
             executionAbility = ability,
