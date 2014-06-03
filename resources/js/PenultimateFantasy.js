@@ -1,4 +1,3 @@
-require(['controllers/Controller'], function (Controller) {
-
-    Controller.start();
+require(['models/Routes', 'controllers/IndexController'], function (Routes, IndexController) {
+    Routes.route('index');
 });

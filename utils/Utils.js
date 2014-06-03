@@ -2,6 +2,20 @@ define(function () {
 
     var exports = {};
 
+    exports.operateOnAll = function(group, operation, params) {
+        if (typeof params === 'undefined') {
+            params = {};
+        }
+        this.params = params;
+
+        for (var individual in group) {
+            if (!operation.call(this, group[individual])) {
+                break;
+            }
+        }
+        return this.params;
+    };
+
     exports.createBattleAbilities = function (abilities) {
 
         var battleAbilities = [];
@@ -22,6 +36,15 @@ define(function () {
 
         return battleAbilities;
     };
+
+    exports.indexOfCharacter = function(characterList, name) {
+        for (var index in characterList) {
+
+            if (characterList[index].vitals.name === name) {
+                return index;
+            }
+        }
+    }
 
     exports.generateName = function (type) {
         //these weird character sets are intended to cope with the nature of English (e.g. char 'x' pops up less frequently than char 's')
