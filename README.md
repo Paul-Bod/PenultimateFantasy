@@ -1,7 +1,12 @@
 PenultimateFantasy
 ==================
 
-Creating a Final Fantasy inspired game in JavaScript
+Creating a Final Fantasy inspired game in JavaScript.
+
+Usage
+=====
+
+Just open penultimatefantasy.html in your browser (only tested in Chrome).
 
 TODO
 =====
