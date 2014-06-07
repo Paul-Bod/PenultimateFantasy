@@ -7,7 +7,6 @@ define([
     '../models/Routes'
 ], function(require, view, model, Heroes, Translations, Routes) {
 
-console.log(Routes);
 	var exports = {};
 
     exports.action = function() {

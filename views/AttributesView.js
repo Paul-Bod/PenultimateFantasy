@@ -1,18 +1,10 @@
 define([
 	'./helpers/Menu',
+    './helpers/Hero',
     '../Utils/Translations'
-], function (Menu, Translations) {
+], function (Menu, Hero, Translations) {
 	var exports = {},
 		controller;
-
-    function renderHeroExperienceToLevelUp(hero) {
-        var heroExpToLevelUp = controller.getExpToLevelUp(hero);
-        return '<p>' + Translations.translate('heroes_experiencetolevelup', [hero, heroExpToLevelUp]) + '</p>';
-    }
-
-    function renderHeroExperience(hero, heroExp) {
-        return '<p>' + Translations.translate('heroes_experience', [hero, heroExp]) + '</p>';
-    }
 
 	exports.initialise = function (controllerInstance) {
 		controller = controllerInstance;
@@ -35,8 +27,8 @@ define([
 
         title = $('<div id="attributestitle"><h3>' + Translations.translate('attributesupgrade_title') + '</h3>'
               + '<p>' + Translations.translate('attributesupgrade_cost', [cost]) + '</p>'
-              + renderHeroExperience(hero, heroExp)
-              + renderHeroExperienceToLevelUp(hero)
+              + Hero.renderExperience(hero, heroExp)
+              + Hero.renderExperienceToLevelUp(hero, controller.getExpToLevelUp(hero))
               + '</div>');
 
         if (!isAffordable) {

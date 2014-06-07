@@ -25,43 +25,7 @@ define([
             none             : 'none'
         };
         
-        
-
-
-
-
-
-    /**
-     * TODO: Very similar to Utils.createBattleAbilities.
-     */
-    function unpack(abilities) {
-        var absObj = {};
-        
-        for (var ability in abilities) {
-            if ($.isArray(abilities[ability])) {
-                var superAbilities = abilities[ability]
-                for (var subAbility in unpack(abilities[ability])) {
-                    var name = superAbilities[subAbility].name;
-                    absObj[name] = name;
-                }
-            }
-            else {
-                absObj[ability] = abilities[ability].name;
-            }
-        }
-
-        return absObj;
-    };
-
-    exports.getAbilities = function(hero) {
-
-        return unpack(heroes[hero].abilities);
-    };
-
-    exports.getAllAbilities = function() {
-
-        return Abilities.getAbilities();
-    };
+    
 
     exports.getItems = function () {
 
@@ -100,25 +64,6 @@ define([
         return Money.getPartyMoney();
     };
 
-    exports.getAbilityUpgradeCost = function(ability, hero) {
-        return Abilities.getAbilityPurchaseCost(ability, heroes[hero].training.level);
-    };
-
-    exports.isAbilityAffordable = function (ability, hero) {
-        var heroExperience = exports.getExp(hero),
-            abilityUpgradeCost = exports.getAbilityUpgradeCost(ability, hero),
-            affordable = false;
-
-        if (heroExperience >= abilityUpgradeCost) {
-            affordable = true;
-        }
-
-        return affordable;
-    };
-
-    exports.purchaseAbility = function(hero, ab) {
-        heroes[hero].receive.ability(ab);
-    };
 
     /*
      * @param selection either a string for top level menu options or an array

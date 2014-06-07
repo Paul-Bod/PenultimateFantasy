@@ -20,7 +20,7 @@ define([
         funcs.push(function() {require('../models/Routes').route('attributes', hero)});
 
         items.push(abilities);
-        funcs.push(function() {renderPurchaseAbilities(hero)});
+        funcs.push(function() {require('../models/Routes').route('skills', hero)});
         
         Menu.logMenu(title, items, funcs);
         Menu.renderMenu(title, items, funcs);

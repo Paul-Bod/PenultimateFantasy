@@ -297,7 +297,7 @@ define(['../utils/MoveSupport', '../lib/EventEmitter'], function (MoveSupport, P
     };
 
     exports.getAbilities = function () {
-        abilities[ability].execute();
+        return abilities;
     };
 
     exports.selectionTypes = MoveSupport.selectionTypes;
