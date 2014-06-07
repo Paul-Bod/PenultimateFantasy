@@ -25,44 +25,8 @@ define([
             none             : 'none'
         };
         
-    
 
-    exports.getItems = function () {
 
-        return Items.getItems();
-    };
-
-    exports.getAmountOfPartyItem = function (item) {
-
-        return Items.getAmountOfPartyItem(item);
-    };
-
-    exports.purchaseItem = function (item) {
-
-        var itemCost = Items.getItemCost(item);
-
-        Money.debitPartyMoney(itemCost);
-
-        Items.addPartyItem(item, 1);
-    };
-
-    exports.isItemAffordable = function (item) {
-
-        var partyMoney = Money.getPartyMoney(),
-            cost = Items.getItemCost(item),
-            affordable = false;
-
-        if (partyMoney >= cost) {
-            affordable = true;
-        }
-
-        return affordable;
-    };
-
-    exports.getPartyMoney = function () {
-
-        return Money.getPartyMoney();
-    };
 
 
     /*

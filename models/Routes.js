@@ -4,8 +4,17 @@ define([
 	'../controllers/BattleController',
 	'../controllers/PowerUpController',
 	'../controllers/AttributesController',
-	'../controllers/SkillsController'
-], function (IndexController, MainController, BattleController, PowerUpController, AttributesController, SkillsController) {
+	'../controllers/SkillsController',
+	'../controllers/ShopController'
+], function (
+	IndexController,
+	MainController,
+	BattleController,
+	PowerUpController,
+	AttributesController,
+	SkillsController,
+	ShopController
+) {
 	var exports = {};
 
 	exports.route = function (route, params) {
@@ -27,6 +36,9 @@ define([
 		   		break;
 		    case 'skills':
 		   		SkillsController.action(params);
+		   		break;
+		   	case 'shop':
+		   		ShopController.action();
 		   		break;
 		   	default:
 		   		throw new Error('Invalid route');

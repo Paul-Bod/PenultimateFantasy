@@ -1,7 +1,7 @@
 define(['./helpers/Menu', '../utils/Translations'], function (Menu, Translations) {
 	var exports = {};
 
-    exports.renderMainMenu = function(battleAction, powerUpAction) {
+    exports.renderMainMenu = function(battleAction, powerUpAction, shopAction) {
 
         var battle = $('<button id="battlebutton" type="button">' + Translations.translate('mainmenu_options_battle') + '</button>'),
             battleFunc,
@@ -24,7 +24,7 @@ define(['./helpers/Menu', '../utils/Translations'], function (Menu, Translations
         funcs.push(powerUpAction);
 
         items.push(shop);
-        funcs.push(function() {renderShop()});
+        funcs.push(shopAction);
 
         title = $('<div>');
         title.attr('id', 'mainmenutitle');

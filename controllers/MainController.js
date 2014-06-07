@@ -9,6 +9,9 @@ define(['require', '../views/MainView', '../models/Routes'], function (require, 
 		},
 		function() {
 			Routes.route('powerup')
+		},
+		function () {
+			Routes.route('shop')
 		});
 	};
 
